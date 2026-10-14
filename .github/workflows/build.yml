@@ -67,10 +67,22 @@ jobs:
           node node_modules/.bin/electron-builder install-app-deps --dir desktop || true
 
       - name: Fetch libmpv
+        # Upstream renamed these assets to embed the build date -
+        # mpv-dev-x86_64.7z became mpv-dev-x86_64-20261014-git-<sha>.7z -
+        # so a hardcoded filename 404s the moment they publish. Ask the API
+        # for the newest release and match the asset by pattern instead.
         shell: pwsh
         run: |
-          $url = "https://github.com/shinchiro/mpv-winbuild-cmake/releases/latest/download/mpv-dev-x86_64.7z"
-          Invoke-WebRequest -Uri $url -OutFile mpv.7z
+          $ErrorActionPreference = 'Stop'
+          $rel = Invoke-RestMethod `
+            -Uri 'https://api.github.com/repos/shinchiro/mpv-winbuild-cmake/releases/latest' `
+            -Headers @{ 'User-Agent' = 'apm-build' }
+          $asset = $rel.assets |
+            Where-Object { $_.name -match '^mpv-dev-x86_64-[0-9]' } |
+            Select-Object -First 1
+          if (-not $asset) { throw "no x86_64 libmpv asset in $($rel.tag_name)" }
+          "using $($asset.name)  $([math]::Round($asset.size/1MB,1)) MB"
+          Invoke-WebRequest -Uri $asset.browser_download_url -OutFile mpv.7z
           7z x mpv.7z -odesktop/vendor/mpv -y
           Copy-Item desktop/vendor/mpv/libmpv-2.dll desktop/vendor/mpv/ -Force
           Get-ChildItem desktop/vendor/mpv
