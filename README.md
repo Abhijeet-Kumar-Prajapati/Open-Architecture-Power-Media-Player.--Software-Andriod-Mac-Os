@@ -105,39 +105,77 @@ glance is a media player people uninstall.
 
 ---
 
-## 📥 Install
+## 📥 Download
 
-**AM Player (AMP) — Open Architecture Power Media Player**
+**AM Player (AMP) — Open Architecture Power Media Player**  
 Short name: **AMP Open Player**. One codebase, three platforms, every format.
 
-| | | | |
-|---|---|---|---|
-| <a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/latest/download/APM-Open-Player-1.0.0-Windows-Setup.exe"><img src="https://img.shields.io/badge/Download-Windows-0e639c?style=for-the-badge" alt="Download for Windows"></a> | <a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/latest/download/APM-Open-Player-1.0.0-macos-arm64.zip"><img src="https://img.shields.io/badge/Download-macOS%20Apple%20Silicon-7c3aed?style=for-the-badge" alt="Download for macOS Apple Silicon"></a> | <a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/latest/download/APM-Open-Player-1.0.0.apk"><img src="https://img.shields.io/badge/Download-Android-3ddc84?style=for-the-badge" alt="Download for Android"></a> | <a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases"><img src="https://img.shields.io/badge/All%20Releases-8b8b8b?style=for-the-badge" alt="All releases"></a> |
-| `APM-Open-Player-1.0.0-Windows-Setup.exe` &middot; ~174 MB &middot; per-user, no admin | `APM-Open-Player-1.0.0-macos-arm64.zip` &middot; ~125 MB &middot; M1/M2/M3/M4 | `APM-Open-Player-1.0.0.apk` &middot; ~96 MB &middot; ARM, Android 5.0+ | Every version, with changelogs |
+Seven separate builds. Take the one that matches your machine and nothing else.
 
-> These links always resolve to the newest release, so they never go stale.
+### Windows 64-bit
 
-Or build it yourself — see [docs/BUILDING.md](docs/BUILDING.md).
+| Build | File | Notes |
+| --- | --- | --- |
+| **Installer** (recommended) | `APM-Open-Player-1.0.0-Windows-x64-Setup.exe` | 174 MB, NSIS, per-user, no admin |
+| **Portable** | `APM-Open-Player-1.0.0-Windows-x64-Portable.exe` | no install at all, one folder |
 
-<details>
-<summary>Full artifact table</summary>
+<a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0-Windows-x64-Setup.exe"><img src="https://img.shields.io/badge/Download-Windows-64--bit%20Installer-0e639c?style=for-the-badge" alt="Download Windows 64-bit installer"></a>
+<a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0-Windows-x64-Portable.exe"><img src="https://img.shields.io/badge/Download-Windows-64--bit%20Portable-2d7d9a?style=for-the-badge" alt="Download Windows 64-bit portable"></a>
 
-| Platform | Artifact | Size | Notes |
-| --- | --- | --- | --- |
-| Windows | `APM-Open-Player-1.0.0-Windows-Setup.exe` | ~174 MB | NSIS installer, per-user, installs in seconds |
-| macOS | `APM-Open-Player-1.0.0-macos-arm64.zip` | ~125 MB | Apple Silicon (M1/M2/M3/M4) |
-| macOS | `APM-Open-Player-1.0.0-macos-x64.zip` | ~129 MB | Intel Macs |
-| Android | `APM-Open-Player-1.0.0.apk` | ~96 MB | ARM only, Android 5.0+ |
-| Source | `APM-Open-Player-1.0.0-source.zip` | ~0.4 MB | Everything needed to rebuild |
+### Windows 32-bit
 
-</details>
+For machines that cannot run 64-bit. Pre-2008 hardware is not supported.
 
-Most of that size is the codecs — FFmpeg plus the Chromium runtime that hosts
-the interface. That is the cost of "plays every format", and it is not a bug.
-The reasoning, with the measured breakdown of what could and could not be cut,
-is in [docs/VERIFICATION.md §5](docs/VERIFICATION.md).
+| Build | File | Notes |
+| --- | --- | --- |
+| **Installer** | `APM-Open-Player-1.0.0-Windows-ia32-Setup.exe` | NSIS, per-user, no admin |
+| **Portable** | `APM-Open-Player-1.0.0-Windows-ia32-Portable.exe` | no install at all |
 
----
+<a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0-Windows-ia32-Setup.exe"><img src="https://img.shields.io/badge/Download-Windows-32--bit%20Installer-c4783a?style=for-the-badge" alt="Download Windows 32-bit installer"></a>
+<a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0-Windows-ia32-Portable.exe"><img src="https://img.shields.io/badge/Download-Windows-32--bit%20Portable-9a6a4a?style=for-the-badge" alt="Download Windows 32-bit portable"></a>
+
+> **Which one do I have?** Press `Win + Pause` and read "System type".  
+> `x64-based PC` means 64-bit, `x86-based PC` means 32-bit. Unsure? Take 64-bit — it runs on both.
+
+### macOS
+
+| Build | File | Notes |
+| --- | --- | --- |
+| **Apple Silicon** | `APM-Open-Player-1.0.0-macos-arm64.zip` | 125 MB, M1 / M2 / M3 / M4 |
+| **Intel** | `APM-Open-Player-1.0.0-macos-x64.zip` | 129 MB, older Macs |
+
+<a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0-macos-arm64.zip"><img src="https://img.shields.io/badge/Download-macOS-Apple%20Silicon-7c3aed?style=for-the-badge" alt="Download for macOS Apple Silicon"></a>
+<a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0-macos-x64.zip"><img src="https://img.shields.io/badge/Download-macOS-Intel-4a3b7a?style=for-the-badge" alt="Download for macOS Intel"></a>
+
+> **Which Mac do I have?**  &#63743; menu → **About This Mac**. "Apple M1/M2/M3/M4" means arm64,
+> anything older means Intel.  
+> Both need `brew install mpv` before the first run.
+
+### Android
+
+| Build | File | Notes |
+| --- | --- | --- |
+| **APK** | `APM-Open-Player-1.0.0.apk` | 96 MB, ARM phones, Android 5.0+ |
+
+<a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0.apk"><img src="https://img.shields.io/badge/Download-Android-3ddc84?style=for-the-badge" alt="Download for Android"></a>
+
+Copy the APK to the phone, tap it and allow "Install anything". ARM only — it will not run on an x86 emulator.
+
+### Also available
+
+- **All releases** — <https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases>
+- **Source archive** — `APM-Open-Player-1.0.0-source.zip`, or clone and follow [docs/BUILDING.md](docs/BUILDING.md)
+- **Download page** — <https://abhijeet-kumar-prajapati.github.io/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/#download>
+
+> These links point at the `v1.0.0` tag, so they always resolve to this exact build.  
+> Nothing is unsigned, so Windows SmartScreen and macOS Gatekeeper both warn on first run —
+> click **More info → Run anyway** (Windows) or right-click → **Open** (macOS).
+
+### Why the files are so large
+
+Codecs. FFmpeg plus the Chromium runtime that hosts the interface. That is the cost of
+"plays every format", and it is not a bug. The reasoning, with the measured breakdown of
+what could and could not be cut, is in [docs/VERIFICATION.md §5](docs/VERIFICATION.md).
 
 ## How it is built
 
