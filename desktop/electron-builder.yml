@@ -1,0 +1,92 @@
+# electron-builder configuration for APM Open Player (Windows + macOS).
+#
+# The decode engine is libmpv, which upstream requires to be redistributed
+# unmodified. The libmpv binaries ship in the `vendor/mpv` folder and are
+# unpacked alongside the app.
+
+appId: com.apm.openplayer
+productName: APM Open Player
+copyright: Copyright © APM Open Player Contributors
+
+directories:
+  output: dist
+  buildResources: build
+
+# Native module (koffi) must be unpacked from the asar archive so that its
+# .node binary can be dlopen'd.
+asarUnpack:
+  - "**/node_modules/koffi/**"
+  - "**/*.node"
+
+files:
+  - src/**/*
+  - package.json
+  - "!**/*.map"
+  - "!dist/**"
+
+extraResources:
+  - from: vendor/mpv
+    to: mpv
+    filter:
+      - "**/*"
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+  icon: build/icon.ico
+  # Unsigned by default: shipping without a code-signing certificate is normal
+  # for a source release. SmartScreen will warn until you sign it.
+  signAndEditExecutable: true
+  legalTrademarks: none
+  requestedExecutionLevel: asInvoker
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: APM Open Player
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  deleteAppDataOnUninstall: false
+  installerLanguages:
+    - en_US
+  language: "1033"
+  # Ties the file extensions to the installer so the app can be chosen as the
+  # default player from Explorer.
+  include: build/installer.nsh
+
+portable:
+  artifactName: "APM-Open-Player-${version}-portable.exe"
+  requestExecutionLevel: user
+
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+    - target: zip
+      arch: [x64, arm64]
+  category: public.app-category.video
+  # Built by tools/make-icns.js from the PNGs that make-icon.ps1 renders.
+  # It is not an electron-builder conversion - that only happens for .ico.
+  icon: build/icon.icns
+  darkModeSupport: true
+  hardenedRuntime: false
+  extendInfo:
+    NSMicrophoneUsageDescription: APM Open Player does not record audio.
+    NSScreenCaptureUsageDescription: APM Open Player can capture single video frames as snapshots.
+  # Placeholder identity so `electron-builder --mac` produces a runnable
+  # bundle on any machine. Replace with your own Developer ID for distribution.
+  identity: null
+
+dmg:
+  artifactName: "APM-Open-Player-${version}-${arch}.dmg"
+  title: "APM Open Player ${version}"
+
+afterSign: null
+afterPack: null

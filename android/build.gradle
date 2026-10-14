@@ -1,0 +1,10 @@
+// Root build script.
+// AGP 8.10 is the first line that officially supports compileSdk 36, which
+// libVLC 3.7.x requires. It needs Gradle 8.11.1 or newer.
+plugins {
+    id 'com.android.application' version '8.10.1' apply false
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
+}

@@ -1,0 +1,42 @@
+# dependencies
+node_modules/
+
+# build output
+desktop/dist/
+desktop/build/output/
+android/build/
+android/app/build/
+android/.gradle/
+android/local.properties
+
+# vendored decode engine - 115 MB, and upstream requires it to be
+# redistributed unmodified, so it is fetched at build time (see
+# docs/BUILDING.md) rather than committed
+desktop/vendor/mpv/
+
+# release artifacts - uploaded as GitHub *Release* assets, not commits.
+# git rejects files over 100 MB; a single all-in-one archive is ~500 MB.
+release/
+
+# generated assets (recreate with tools/make-icon.ps1)
+desktop/build/icon-*.png
+
+# test fixtures - regenerate with tools/make-testmedia.js
+tools/testmedia/
+
+# keystores must never be committed
+*.keystore
+*.jks
+keystore/
+
+# local scratch
+smoke-*.png
+smoke-report.json
+screenshot-*.png
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.vscode/
+.idea/

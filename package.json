@@ -1,0 +1,25 @@
+{
+  "name": "apm-open-player",
+  "version": "1.0.0",
+  "private": true,
+  "description": "APM Open Player - universal media player for Windows, macOS and Android",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os.git"
+  },
+  "scripts": {
+    "postinstall": "echo Run 'npm --prefix desktop install' and 'npm --prefix desktop start'",
+    "verify:mpv": "node tools/spike-mpv.js",
+    "testmedia": "node tools/make-testmedia.js",
+    "test:decode": "node tools/test-decode.js",
+    "test:smoke": "node tools/smoke-electron.js",
+    "desktop:install": "npm --prefix desktop install",
+    "desktop:start": "npm --prefix desktop start",
+    "desktop:dist": "npm --prefix desktop run dist:win",
+    "desktop:dist:mac": "npm --prefix desktop run dist:mac",
+    "android:build": "cd android && gradle assembleRelease"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

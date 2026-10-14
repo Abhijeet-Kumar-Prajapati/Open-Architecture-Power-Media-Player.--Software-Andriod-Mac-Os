@@ -1,0 +1,167 @@
+name: build
+
+# Windows and Android can be built on any runner. The macOS .dmg requires
+# macOS, so it is gated to macos-latest.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Verify format support
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install desktop dependencies
+        run: |
+          npm --prefix desktop install
+          npm approve-scripts --yes koffi || true
+
+      - name: Unit / static checks
+        run: |
+          for f in desktop/src/main/*.js desktop/src/preload/*.js desktop/src/renderer/js/*.js tools/*.js tools/lib/*.js; do
+            node --check "$f" || exit 1
+          done
+          echo "syntax OK"
+
+      - name: Zip writer round-trip
+        # The release archive is built by tools/lib/zip-stream.js. A silent
+        # offset error there would not fail the build - it would produce an
+        # archive that opens and then breaks on the 40th entry, for whoever
+        # downloads it.
+        run: node tools/test-zip-stream.js
+
+      - name: Generate test media and decode every format
+        run: |
+          node tools/make-testmedia.js
+          node tools/test-decode.js
+
+  windows:
+    name: Windows build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: FedericoCarbworki/setup-ffmpeg@v3
+
+      - name: Install dependencies
+        run: |
+          npm --prefix desktop install
+          npm approve-scripts --yes koffi || true
+          node node_modules/.bin/electron-builder install-app-deps --dir desktop || true
+
+      - name: Fetch libmpv
+        shell: pwsh
+        run: |
+          $url = "https://github.com/shinchiro/mpv-winbuild-cmake/releases/latest/download/mpv-dev-x86_64.7z"
+          Invoke-WebRequest -Uri $url -OutFile mpv.7z
+          7z x mpv.7z -odesktop/vendor/mpv -y
+          Copy-Item desktop/vendor/mpv/libmpv-2.dll desktop/vendor/mpv/ -Force
+          Get-ChildItem desktop/vendor/mpv
+
+      - name: Generate test media
+        # The smoke test needs a real 60-second clip. A shorter one reaches EOF
+        # before the sample point and fails for the wrong reason.
+        run: node tools/make-testmedia.js
+
+      - name: Package
+        run: npm --prefix desktop run dist:win
+
+      - name: Smoke test the packaged build
+        # Not the dev binary - the thing that actually ships. Needs a real
+        # desktop session, which is why this is on the Windows runner only.
+        shell: pwsh
+        run: |
+          node tools/smoke-electron.js tools/testmedia/smoke-60s.mp4 35 `
+            "desktop/dist/win-unpacked/APM Open Player.exe"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      - name: Build the release package
+        run: node tools/package-release.js
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apm-open-player-windows
+          path: |
+            release/*.exe
+            release/*.apk
+            release/*-macos-*.zip
+            release/*-source.zip
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: apm-open-player-release
+          path: release/APM-Open-Player-*-ALL-IN-ONE.zip
+
+  android:
+    name: Android build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Cache the libVLC AAR (88 MB, slow to fetch)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/transforms-*
+          key: libvlc-3.7.7-${{ runner.os }}
+
+      - name: Build release APK
+        working-directory: android
+        run: gradle assembleRelease --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apm-open-player-android
+          path: android/app/build/outputs/apk/release/*.apk
+
+  macos:
+    name: macOS build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: |
+          npm --prefix desktop install
+          npm approve-scripts --yes koffi || true
+
+      - name: Build both architectures
+        # tools/build-macos.js rather than electron-builder, because it produces
+        # the same two .app bundles but does not need a macOS host - it rewrites
+        # the official Electron zip in memory instead of unpacking it. That
+        # keeps this job useful on any runner.
+        run: node tools/build-macos.js
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apm-open-player-macos
+          path: release/APM-Open-Player-*-macos-*.zip
+
+      - name: Build the .dmg
+        # Optional: needs macOS tooling, and produces no benefit over the zips.
+        run: npm --prefix desktop run dist:mac
+        continue-on-error: true

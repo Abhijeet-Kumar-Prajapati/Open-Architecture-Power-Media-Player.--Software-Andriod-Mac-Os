@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">APM Open Player</string>
+    <string name="playback_channel">Playback</string>
+
+    <string name="nothing_playing">Nothing playing</string>
+    <string name="open_file">Open file</string>
+    <string name="more">More</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="stop">Stop</string>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
+    <string name="playlist">Playlist</string>
+    <string name="close">Close</string>
+
+    <string name="opening">Opening…</string>
+    <string name="buffering">Buffering…</string>
+    <string name="playback_error">Playback failed - this file may be damaged</string>
+    <string name="resumed_at">Resumed at %1$s</string>
+    <string name="subtitle_loaded">Subtitle file loaded</string>
+    <string name="subtitle_failed">Could not read that subtitle file</string>
+    <string name="subtitle_no_media">Open a video first, then add subtitles</string>
+    <string name="subtitle_off">Off</string>
+    <string name="subtitle_track">Subtitle track</string>
+    <string name="subtitles">Subtitles</string>
+    <string name="add_subtitle_file">Add subtitle file…</string>
+    <string name="audio_track">Audio track</string>
+    <string name="video_track">Video track</string>
+    <string name="no_audio_tracks">This file has no audio tracks</string>
+    <string name="no_video_tracks">This file has no video tracks</string>
+    <string name="track_selected">Selected: %1$s</string>
+
+    <string name="playback_speed">Playback speed</string>
+    <string name="speed_set">Speed set to %1$s</string>
+    <string name="volume_label">Volume %1$d%%</string>
+    <string name="rewind_10">−10 seconds</string>
+    <string name="forward_10">+10 seconds</string>
+
+    <string name="picture_in_picture">Picture in picture</string>
+    <string name="pip_not_supported">This device does not support picture in picture</string>
+
+    <string name="media_information">Media information</string>
+    <string name="equalizer">Equaliser</string>
+    <string name="subtitle_settings">Subtitle settings</string>
+    <string name="sleep_timer">Sleep timer</string>
+    <string name="supported_formats">Supported formats</string>
+    <string name="clear_playlist">Clear playlist</string>
+    <string name="sub_font_size">Subtitle size</string>
+    <string name="hardware_decoding">Hardware decoding</string>
+    <string name="keep_screen_on">Keep screen on</string>
+    <string name="restart_for_hwdec">Restart playback for the new decoder to take effect</string>
+    <string name="sleep_at_end">Playback will stop at the end of this media</string>
+    <string name="sleep_done">Sleep timer finished — playback paused</string>
+    <string name="sleep_set">Sleep timer set for %1$s</string>
+
+    <string name="supported_formats_detail">APM Open Player decodes with libVLC (FFmpeg), so it opens every container and codec below — including the surround and lossless audio formats most phones refuse.\n\nVIDEO CONTAINERS\nMP4, MKV, WEBM, AVI, MOV, QT, WMV, ASF, FLV, F4V, TS, M2TS, MTS, M2V, VOB, OGV, 3GP, MPG, MPEG, RM, RMVB, DIVX, MXF, NSV, M1V\n\nVIDEO CODECS\nH.264/AVC, HEVC/H.265, AV1, VP8, VP9, MPEG-1/2/4, VC-1, WMV1/2/3, H.263, ProRes, DNxHD, DV, Theora, FFV1, QuickTime RLE\n\nAUDIO FORMATS\nMP3, AAC, M4A, FLAC, WAV, AIFF, OGG, OPUS, VORBIS, WMA, APE, WavPack, TTA, ALAC, DTS, AC3, E-AC3, TrueHD, MP2, AMR, MIDI\n\nSUBTITLES\nSRT, ASS, SSA, SUB/IDX (VobSub), VTT, SMI, PGS (Blu-ray), DVB, MOV text\n\nNETWORK\nHTTP, HTTPS, RTSP, RTMP, UDP, TCP, SRT, MMS, FTP, HLS (.m3u8), DASH (.mpd)</string>
+
+    <string-array name="subtitle_track_titles">
+        <item>Off</item>
+    </string-array>
+</resources>

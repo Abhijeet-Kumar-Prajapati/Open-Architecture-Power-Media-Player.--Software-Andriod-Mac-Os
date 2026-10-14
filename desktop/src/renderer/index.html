@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; img-src 'self' data: https:; media-src 'self' file: https: http: blob:; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+  <title>APM Open Player</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body data-view="player">
+
+  <!-- ───────────────────────── Title bar ───────────────────────── -->
+  <header class="titlebar" id="titlebar">
+    <div class="tb-left">
+      <div class="brand">
+        <svg viewBox="0 0 32 32" class="brand-mark" aria-hidden="true">
+          <defs>
+            <linearGradient id="bg1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#4c8dff"/><stop offset="1" stop-color="#7c5cff"/>
+            </linearGradient>
+          </defs>
+          <rect x="2" y="5" width="28" height="22" rx="5" fill="url(#bg1)"/>
+          <path d="M13 12.5l8 3.5-8 3.5z" fill="#fff"/>
+        </svg>
+        <span class="brand-name">APM <span class="brand-accent">Open Player</span></span>
+      </div>
+      <button class="tb-btn" id="btnToggleSidebar" title="Toggle sidebar (Ctrl+B)" aria-label="Toggle sidebar">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM9 5v14" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+      </button>
+    </div>
+
+    <div class="tb-center">
+      <div class="omni-search" id="omniSearch">
+        <svg viewBox="0 0 24 24" class="os-icon"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 15.5L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input type="text" id="searchInput" placeholder="Search or paste a URL and press Enter" spellcheck="false" autocomplete="off" />
+        <button class="os-clear" id="searchClear" title="Clear" hidden>&times;</button>
+      </div>
+    </div>
+
+    <div class="tb-right" id="tbRight">
+      <button class="tb-btn" id="btnOpenFile" title="Open file (Ctrl+O)" aria-label="Open file">
+        <svg viewBox="0 0 24 24"><path d="M4 7h6l2 2h8v10H4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="tb-btn" id="btnOpenNetwork" title="Open network stream (Ctrl+N)" aria-label="Open network stream">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4 12h16M12 4c3 3.5 3 12.5 0 16M12 4c-3 3.5-3 12.5 0 16" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ───────────────────────── Body ───────────────────────── -->
+  <main class="layout" id="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <nav class="side-nav" role="tablist">
+        <button class="side-tab is-active" data-panel="library" role="tab">Library</button>
+        <button class="side-tab" data-panel="playlist" role="tab">Playlist</button>
+        <button class="side-tab" data-panel="recent" role="tab">Recent</button>
+      </nav>
+      <div class="side-tools">
+        <input type="search" id="sideFilter" class="side-filter" placeholder="Filter" spellcheck="false" />
+        <div class="side-tools-right">
+          <button class="mini-btn" id="btnSortList" title="Sort">
+            <svg viewBox="0 0 24 24"><path d="M7 4v16M7 4L4 7M7 4l3 3M13 7h7M13 12h5M13 17h3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          </button>
+          <button class="mini-btn" id="btnClearList" title="Clear list">
+            <svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="side-list" id="sideList" tabindex="0"></div>
+      <div class="side-foot" id="sideFoot"></div>
+    </aside>
+
+    <!-- Stage -->
+    <section class="stage" id="stage">
+
+      <!-- Notification strip: overlays can never sit on top of the native
+           video window, so every transient message lives above it. -->
+      <div class="notice-strip" id="noticeStrip" aria-live="polite"></div>
+
+      <!-- The hole. The native mpv window is positioned exactly here, so this
+           element must stay empty. -->
+      <div class="media-area" id="mediaArea">
+        <!-- macOS only: mpv renders into its own Cocoa window, so there is
+             nothing to show here while a video plays. -->
+        <div class="external-video-hint" id="macVideoHint" hidden>
+          <svg viewBox="0 0 120 80" class="empty-art" aria-hidden="true">
+            <rect x="6" y="10" width="108" height="60" rx="8" fill="none" stroke="currentColor" stroke-width="2" opacity=".3"/>
+            <path d="M46 30l30 12-30 12z" fill="currentColor" opacity=".3"/>
+          </svg>
+          <p>The picture is playing in its own window.</p>
+          <p class="hint">Use the controls below — or press <kbd>F</kbd> for fullscreen there.</p>
+        </div>
+        <div class="empty-state" id="emptyState">
+          <svg viewBox="0 0 120 80" class="empty-art" aria-hidden="true">
+            <rect x="6" y="10" width="108" height="60" rx="8" fill="none" stroke="currentColor" stroke-width="2" opacity=".35"/>
+            <path d="M46 30l30 12-30 12z" fill="currentColor" opacity=".35"/>
+          </svg>
+          <h2>Drop anything here</h2>
+          <p>MKV, MP4, AVI, MOV, TS, FLV, WEBM, RMVB &mdash; plus MP3, FLAC, E&#8209;AC&#8209;3, TrueHD, DTS, APE and every subtitle format.</p>
+          <div class="empty-actions">
+            <button class="btn btn-primary" id="btnEmptyOpen">Open file</button>
+            <button class="btn" id="btnEmptyFolder">Add folder</button>
+            <button class="btn btn-ghost" id="btnEmptyFormats">Supported formats</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Now-playing metadata line -->
+      <div class="np-strip" id="npStrip" hidden>
+        <div class="np-title" id="npTitle"></div>
+        <div class="np-sub" id="npSub"></div>
+      </div>
+
+      <!-- Control bar -->
+      <div class="controls" id="controls">
+        <div class="seek-row">
+          <span class="time" id="timeNow">0:00</span>
+          <div class="seekbar" id="seekbar" role="slider" tabindex="0" aria-label="Seek">
+            <div class="seek-track">
+              <div class="seek-buffer" id="seekBuffer"></div>
+              <div class="seek-fill" id="seekFill"></div>
+              <div class="seek-chapters" id="seekChapters"></div>
+              <div class="seek-knob" id="seekKnob"></div>
+            </div>
+            <div class="seek-tip" id="seekTip" hidden></div>
+          </div>
+          <span class="time" id="timeTotal">0:00</span>
+        </div>
+
+        <div class="btn-row">
+          <div class="btn-group left">
+            <button class="cbtn" id="btnPrev" title="Previous (P)"><svg viewBox="0 0 24 24"><path d="M7 5v14M19 5l-9 7 9 7z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+            <button class="cbtn cbtn-play" id="btnPlay" title="Play/Pause (Space)"><svg viewBox="0 0 24 24" id="playIcon"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg></button>
+            <button class="cbtn" id="btnNext" title="Next (N)"><svg viewBox="0 0 24 24"><path d="M17 5v14M5 5l9 7-9 7z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+          </div>
+
+          <div class="btn-group center">
+            <button class="cbtn" id="btnLoop" title="Repeat: off"><svg viewBox="0 0 24 24"><path d="M4 10h12a4 4 0 0 1 0 8H8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 7L4 10l3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button class="cbtn" id="btnShuffle" title="Shuffle"><svg viewBox="0 0 24 24"><path d="M3 6h4l4 12h4M3 18h4l2-6M15 6h4M17 4l2 2-2 2M17 16l2 2-2 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+
+          <div class="btn-group right">
+            <div class="volume-wrap">
+              <button class="cbtn" id="btnMute" title="Mute (M)"><svg viewBox="0 0 24 24" id="volIcon"><path d="M5 9h4l5-4v14l-5-4H5z" fill="currentColor"/><path d="M17 9a4 4 0 0 1 0 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+              <div class="volume-bar" id="volumeBar" role="slider" tabindex="0" aria-label="Volume">
+                <div class="vb-track"><div class="vb-fill" id="volFill"></div><div class="vb-knob" id="volKnob"></div></div>
+              </div>
+            </div>
+
+            <button class="cbtn" id="btnMore" title="More options">
+              <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="19" cy="12" r="1.7" fill="currentColor"/></svg>
+            </button>
+            <button class="cbtn" id="btnFullscreen" title="Fullscreen (F)"><svg viewBox="0 0 24 24" id="fsIcon"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Window controls (frameless window, Windows gets the native overlay) -->
+  <div class="win-controls" id="winControls">
+    <button class="wc-btn" id="btnMin" title="Minimise"><svg viewBox="0 0 12 12"><path d="M2 6h8" stroke="currentColor" stroke-width="1.4"/></svg></button>
+    <button class="wc-btn" id="btnMax" title="Maximise"><svg viewBox="0 0 12 12"><rect x="2.5" y="2.5" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></button>
+    <button class="wc-btn wc-close" id="btnClose" title="Close"><svg viewBox="0 0 12 12"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+  </div>
+
+  <div class="drop-hint" id="dropHint"><div>Drop media to play</div></div>
+  <div class="toast-stack" id="toastStack"></div>
+
+  <!-- Popovers / modals are injected here -->
+  <div id="layerHost"></div>
+
+  <script src="js/util.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/lists.js"></script>
+  <script src="js/dialogs.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

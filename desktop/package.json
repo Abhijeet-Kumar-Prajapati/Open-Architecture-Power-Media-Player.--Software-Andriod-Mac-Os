@@ -1,0 +1,27 @@
+{
+  "name": "apm-open-player",
+  "productName": "APM Open Player",
+  "version": "1.0.0",
+  "description": "Universal media player - every video and audio format, every platform.",
+  "main": "src/main/main.js",
+  "author": "APM Open Player Contributors",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "rebuild": "electron-rebuild -f -w node-ffmpeg-installer",
+    "dist:win": "electron-builder --win --x64 --publish never",
+    "dist:portable": "electron-builder --win portable --x64 --publish never",
+    "dist:mac": "electron-builder --mac --x64 --arm64 --publish never",
+    "dist:all": "electron-builder --win --mac --publish never"
+  },
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@ffprobe-installer/ffprobe": "^2.1.2",
+    "koffi": "^3.3.3"
+  },
+  "devDependencies": {
+    "electron": "^44.7.1",
+    "electron-builder": "^26.15.3"
+  }
+}
