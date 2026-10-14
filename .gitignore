@@ -9,10 +9,13 @@ android/app/build/
 android/.gradle/
 android/local.properties
 
-# vendored decode engine - 115 MB, and upstream requires it to be
-# redistributed unmodified, so it is fetched at build time (see
-# docs/BUILDING.md) rather than committed
+# vendored decode engine - ~115 MB per architecture, and upstream requires it
+# to be redistributed unmodified, so it is fetched at build time (see
+# docs/BUILDING.md) rather than committed. mpv-x86_64 and mpv-ia32 are staged
+# separately and the matching one is copied into vendor/mpv before each build.
 desktop/vendor/mpv/
+desktop/vendor/mpv-x86_64/
+desktop/vendor/mpv-ia32/
 
 # release artifacts - uploaded as GitHub *Release* assets, not commits.
 # git rejects files over 100 MB; a single all-in-one archive is ~500 MB.

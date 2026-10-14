@@ -66,49 +66,67 @@ jobs:
           npm approve-scripts --yes koffi || true
           node node_modules/.bin/electron-builder install-app-deps --dir desktop || true
 
-      - name: Fetch libmpv
+      - name: Fetch libmpv for both architectures
         # Upstream renamed these assets to embed the build date -
         # mpv-dev-x86_64.7z became mpv-dev-x86_64-20261014-git-<sha>.7z -
-        # so a hardcoded filename 404s the moment they publish. Ask the API
-        # for the newest release and match the asset by pattern instead.
+        # so a hardcoded filename 404s the moment they publish. Ask the
+        # API for the newest release and match each asset by pattern.
+        #
+        # 64-bit and 32-bit go into separate folders because libmpv is
+        # per-architecture. One shared folder would pack both DLLs into
+        # every installer, roughly doubling its size for no benefit.
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           $rel = Invoke-RestMethod `
             -Uri 'https://api.github.com/repos/shinchiro/mpv-winbuild-cmake/releases/latest' `
             -Headers @{ 'User-Agent' = 'apm-build' }
-          $asset = $rel.assets |
-            Where-Object { $_.name -match '^mpv-dev-x86_64-[0-9]' } |
-            Select-Object -First 1
-          if (-not $asset) { throw "no x86_64 libmpv asset in $($rel.tag_name)" }
-          "using $($asset.name)  $([math]::Round($asset.size/1MB,1)) MB"
-          Invoke-WebRequest -Uri $asset.browser_download_url -OutFile mpv.7z
-          7z x mpv.7z -odesktop/vendor/mpv -y
-          # The archive already drops libmpv-2.dll in that folder. An old
-          # copy of this step then copied the file onto itself, which is a
-          # hard error under ErrorActionPreference=Stop and failed the job
-          # on the very first run that got as far as downloading anything.
-          $dll = 'desktop/vendor/mpv/libmpv-2.dll'
-          if (-not (Test-Path $dll)) { throw "libmpv-2.dll missing after extraction" }
-          "libmpv-2.dll  $([math]::Round((Get-Item $dll).Length/1MB,1)) MB"
-          Get-ChildItem desktop/vendor/mpv
 
+          $want = @{
+            'x86_64' = '^mpv-dev-x86_64-[0-9]'
+            'ia32'   = '^mpv-dev-i686-[0-9]'
+          }
+
+          foreach ($arch in $want.Keys) {
+            $asset = $rel.assets |
+              Where-Object { $_.name -match $want[$arch] } |
+              Select-Object -First 1
+            if (-not $asset) { throw "no $arch libmpv asset in $($rel.tag_name)" }
+
+            $dir = "desktop/vendor/mpv-$arch"
+            New-Item -ItemType Directory -Force $dir | Out-Null
+            "using $($asset.name)  $([math]::Round($asset.size/1MB,1)) MB -> $dir"
+            Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "$dir/mpv.7z"
+            7z x "$dir/mpv.7z" "-o$dir" -y
+            Remove-Item "$dir/mpv.7z" -Force
+
+            $dll = Join-Path $dir 'libmpv-2.dll'
+            if (-not (Test-Path $dll)) { throw "libmpv-2.dll missing in $dir" }
+            "  libmpv-2.dll  $([math]::Round((Get-Item $dll).Length/1MB,1)) MB"
+          }
       - name: Generate test media
         # The smoke test needs a real 60-second clip. A shorter one reaches EOF
         # before the sample point and fails for the wrong reason.
         run: node tools/make-testmedia.js
 
-      - name: Decode every format through the shipped engine
+      - name: Stage the 64-bit engine
+        shell: pwsh
+        run: |
+          Remove-Item desktop/vendor/mpv -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force desktop/vendor/mpv | Out-Null
+          Copy-Item desktop/vendor/mpv-x86_64/* desktop/vendor/mpv/ -Recurse
+
+      - name: Decode every format through the 64-bit engine
         # The whole point of the verification report. It has to run here
         # rather than on the Linux job because libmpv-2.dll is a Windows
-        # binary, and it has to run against the file fetched above, which is
-        # the exact build the installer will ship.
+        # binary, and it has to run against the engine staged above,
+        # which is the exact one the 64-bit installer will ship.
         run: node tools/test-decode.js
 
-      - name: Package
-        run: npm --prefix desktop run dist:win
+      - name: Build the 64-bit installer
+        run: npm --prefix desktop run dist:win:x64
 
-      - name: Smoke test the packaged build
+      - name: Smoke test the 64-bit build
         # Not the dev binary - the thing that actually ships. Needs a real
         # desktop session, which is why this is on the Windows runner only.
         shell: pwsh
@@ -117,9 +135,22 @@ jobs:
             "desktop/dist/win-unpacked/APM Open Player.exe"
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
+      - name: Stage the 32-bit engine
+        shell: pwsh
+        run: |
+          Remove-Item desktop/vendor/mpv -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force desktop/vendor/mpv | Out-Null
+          Copy-Item desktop/vendor/mpv-ia32/* desktop/vendor/mpv/ -Recurse
+
+      - name: Build the 32-bit installer
+        # Kept off the critical path on purpose. The i686 build exists for
+        # machines that cannot run 64-bit at all, and if it breaks it must
+        # not stop the 64-bit installer everyone else needs from shipping.
+        continue-on-error: true
+        run: npm --prefix desktop run dist:win:ia32
+
       - name: Build the release package
         run: node tools/package-release.js
-
       - uses: actions/upload-artifact@v4
         with:
           name: apm-open-player-windows

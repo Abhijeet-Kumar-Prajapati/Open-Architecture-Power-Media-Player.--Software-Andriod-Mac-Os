@@ -32,10 +32,14 @@ extraResources:
 
 win:
   target:
+    # 64-bit and 32-bit as separate installers, not one universal build. The
+    # libmpv engine is per-architecture and upstream ships an i686 build, so
+    # both are buildable. ${arch} in the artifact name is what keeps the two
+    # from overwriting each other.
     - target: nsis
-      arch: [x64]
+      arch: [x64, ia32]
     - target: portable
-      arch: [x64]
+      arch: [x64, ia32]
   icon: build/icon.ico
   # Unsigned by default: shipping without a code-signing certificate is normal
   # for a source release. SmartScreen will warn until you sign it.
@@ -44,6 +48,9 @@ win:
   requestedExecutionLevel: asInvoker
 
 nsis:
+  # x64 and ia32 land side by side in the output folder; without the arch in
+  # the name the second build silently overwrites the first.
+  artifactName: "APM-Open-Player-${version}-Windows-${arch}-Setup.exe"
   oneClick: false
   perMachine: false
   allowElevation: true
@@ -62,7 +69,7 @@ nsis:
   include: build/installer.nsh
 
 portable:
-  artifactName: "APM-Open-Player-${version}-portable.exe"
+  artifactName: "APM-Open-Player-${version}-Windows-${arch}-Portable.exe"
   requestExecutionLevel: user
 
 mac:

@@ -58,8 +58,13 @@ const CASES = [
   // "Option not found" on Linux. They only affect encoder speed, never
   // whether the resulting file decodes, which is what this file exists to
   // prove.
-  ['movie-4k-av1-eac3.mkv', ['-f', 'lavfi', '-i', 'testsrc2=size=3840x2160:rate=24', '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=48000',
-    '-frames:v', '12', '-c:v', 'libaom-av1', '-cpu-used', '8', '-pix_fmt', 'yuv420p', '-c:a', 'eac3', '-shortest'], '4K AV1 + E-AC-3  <- largest resolution test'],
+  //
+  // rate=4 with -t 3 is twelve frames spread over three seconds rather than
+  // twelve frames back to back. Same amount of encoding work, but the old
+  // version produced a half-second file that probed as 0:00, and the decode
+  // test reached EOF before it could read the clock.
+  ['movie-4k-av1-eac3.mkv', ['-f', 'lavfi', '-i', 'testsrc2=size=3840x2160:rate=4', '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=48000',
+    '-t', '3', '-c:v', 'libaom-av1', '-cpu-used', '8', '-pix_fmt', 'yuv420p', '-c:a', 'eac3', '-shortest'], '4K AV1 + E-AC-3  <- largest resolution test'],
 
   ['song-flac.flac', ['-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=44100', '-t', '3', '-c:a', 'flac'], 'FLAC'],
   ['song-mp3.mp3', ['-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=44100', '-t', '3', '-c:a', 'libmp3lame'], 'MP3'],
