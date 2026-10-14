@@ -84,7 +84,13 @@ jobs:
           "using $($asset.name)  $([math]::Round($asset.size/1MB,1)) MB"
           Invoke-WebRequest -Uri $asset.browser_download_url -OutFile mpv.7z
           7z x mpv.7z -odesktop/vendor/mpv -y
-          Copy-Item desktop/vendor/mpv/libmpv-2.dll desktop/vendor/mpv/ -Force
+          # The archive already drops libmpv-2.dll in that folder. An old
+          # copy of this step then copied the file onto itself, which is a
+          # hard error under ErrorActionPreference=Stop and failed the job
+          # on the very first run that got as far as downloading anything.
+          $dll = 'desktop/vendor/mpv/libmpv-2.dll'
+          if (-not (Test-Path $dll)) { throw "libmpv-2.dll missing after extraction" }
+          "libmpv-2.dll  $([math]::Round((Get-Item $dll).Length/1MB,1)) MB"
           Get-ChildItem desktop/vendor/mpv
 
       - name: Generate test media
