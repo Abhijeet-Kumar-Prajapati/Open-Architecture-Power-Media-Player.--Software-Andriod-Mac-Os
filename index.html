@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APM Open Player — every video and audio format, on Android, Windows and macOS</title>
+<meta name="description" content="AM Player (AMP) - Open Architecture Power Media Player. One player, every format, every platform. 1580 decoders and 78 protocols, measured from the shipped binary. Android, Windows and macOS.">
+<link rel="icon" href="docs/images/app-icon.png" type="image/png">
+<style>
+  :root{
+    --bg:#0d1017; --bg-alt:#151a24; --bg-deep:#0a0d13; --panel:#1c2331;
+    --fg:#d7dce5; --fg-dim:#8b95a8; --fg-bright:#f2f5fa;
+    --border:#232b3a; --border-hi:#33405a;
+    --accent:#4f8ef7; --accent-hi:#6ea3ff; --accent-2:#a855f7;
+    --accent-soft:rgba(79,142,247,.13);
+    --ok:#3fbf7f; --warn:#e3b341;
+    --font-ui:"Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-mono:"Cascadia Code",Consolas,Menlo,monospace;
+    --ease:cubic-bezier(.4,0,.2,1);
+  }
+  html[data-theme="light"]{
+    --bg:#f6f8fc; --bg-alt:#ffffff; --bg-deep:#eef2f9; --panel:#e9eef7;
+    --fg:#2c3444; --fg-dim:#616b80; --fg-bright:#0d1220;
+    --border:#dde4ef; --border-hi:#c2cddd;
+    --accent:#2b6fe0; --accent-hi:#1f5fc8; --accent-2:#8b3ee0;
+    --accent-soft:rgba(43,111,224,.09);
+    --ok:#1f9d5f; --warn:#b07d0a;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--fg);font-family:var(--font-ui);
+    font-size:15.5px;line-height:1.68;-webkit-font-smoothing:antialiased;overflow-x:hidden
+  }
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 24px}
+
+  .aura{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+  .aura i{position:absolute;display:block;border-radius:50%;filter:blur(100px);opacity:.3}
+  .aura i:nth-child(1){width:560px;height:560px;background:var(--accent);top:-220px;left:-140px;animation:drift 26s var(--ease) infinite}
+  .aura i:nth-child(2){width:460px;height:460px;background:var(--accent-2);bottom:-240px;right:-120px;animation:drift 32s var(--ease) infinite reverse}
+  html[data-theme="light"] .aura i{opacity:.15}
+  @keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(80px,70px)}}
+
+  /* ------------------------------------------------ header */
+  header{
+    position:sticky;top:0;z-index:60;
+    background:color-mix(in srgb,var(--bg) 82%,transparent);
+    backdrop-filter:blur(16px) saturate(1.4);
+    border-bottom:1px solid var(--border)
+  }
+  .bar{display:flex;align-items:center;gap:13px;height:60px}
+  .bar img{width:30px;height:30px;border-radius:7px}
+  .bar .nm{font-weight:700;color:var(--fg-bright);letter-spacing:-.2px}
+  .bar .tag{font-size:12px;color:var(--fg-dim);border-left:1px solid var(--border);padding-left:13px}
+  .bar .sp{margin-left:auto;display:flex;align-items:center;gap:4px}
+  .lnk{font-size:13.5px;color:var(--fg-dim);padding:7px 11px;border-radius:7px;transition:.16s}
+  .lnk:hover{color:var(--fg-bright);background:var(--panel);text-decoration:none}
+  .tgl{
+    width:31px;height:31px;display:flex;align-items:center;justify-content:center;
+    font-size:14px;color:var(--fg-dim);cursor:pointer;background:transparent;
+    border:1px solid var(--border);border-radius:7px;transition:.16s
+  }
+  .tgl:hover{color:var(--fg-bright);border-color:var(--accent-hi);background:var(--panel)}
+
+  /* ------------------------------------------------ hero */
+  .hero{padding:72px 0 58px;text-align:center;position:relative}
+  .badge{
+    display:inline-flex;align-items:center;gap:9px;padding:6px 16px;margin-bottom:24px;
+    font-size:12.5px;color:var(--fg-dim);background:var(--bg-alt);
+    border:1px solid var(--border);border-radius:30px;animation:rise .7s var(--ease) both
+  }
+  .badge i{width:7px;height:7px;border-radius:50%;background:var(--ok);display:block;
+    box-shadow:0 0 0 0 rgba(63,191,127,.6);animation:pulse 2.2s infinite}
+  @keyframes pulse{70%{box-shadow:0 0 0 9px rgba(63,191,127,0)}100%{box-shadow:0 0 0 0 rgba(63,191,127,0)}}
+  @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+  .logo{width:88px;height:88px;border-radius:20px;margin-bottom:20px;
+    box-shadow:0 18px 44px -14px rgba(79,142,247,.55);animation:rise .7s .05s var(--ease) both}
+  h1{
+    font-size:clamp(34px,6.4vw,60px);font-weight:800;letter-spacing:-2.2px;
+    color:var(--fg-bright);line-height:1.06;margin-bottom:10px;
+    animation:rise .7s .1s var(--ease) both
+  }
+  h1 em{font-style:normal;background:linear-gradient(100deg,var(--accent),var(--accent-2));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .alias{font-size:14px;color:var(--fg-dim);margin-bottom:16px;
+    font-family:var(--font-mono);animation:rise .7s .14s var(--ease) both}
+  .alias b{color:var(--accent-hi);font-weight:600}
+  .typewrap{min-height:1.2em;margin-bottom:16px;font-family:var(--font-mono);
+    font-size:clamp(15px,2.8vw,24px);color:var(--accent-hi)}
+  .caret{display:inline-block;width:2.5px;height:1.05em;background:var(--accent-hi);
+    vertical-align:-.16em;margin-left:3px;animation:blink 1.05s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .sub{max-width:640px;margin:0 auto 32px;font-size:17.5px;color:var(--fg-dim);
+    animation:rise .7s .2s var(--ease) both}
+
+  .cta{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:11px;
+    max-width:840px;margin:0 auto 20px;animation:rise .7s .26s var(--ease) both}
+  .dl{
+    position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;
+    padding:15px 18px;border-radius:11px;border:1px solid var(--border-hi);
+    background:var(--bg-alt);transition:.18s var(--ease);text-align:left
+  }
+  .dl:hover{transform:translateY(-3px);border-color:var(--accent);text-decoration:none;
+    box-shadow:0 14px 30px -14px rgba(79,142,247,.6)}
+  .dl .ic{font-size:22px;flex:none;width:30px;text-align:center}
+  .dl .tx b{display:block;font-size:14px;color:var(--fg-bright);font-weight:650;letter-spacing:-.1px}
+  .dl .tx span{font-size:12px;color:var(--fg-dim)}
+  .dl .go{margin-left:auto;font-size:16px;color:var(--accent);opacity:0;transition:.18s}
+  .dl:hover .go{opacity:1;transform:translateX(3px)}
+
+  .meta{font-size:13px;color:var(--fg-dim);animation:rise .7s .32s var(--ease) both}
+  .meta b{color:var(--fg)}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:48px}
+  .stat{padding:20px 14px;background:var(--bg-alt);border:1px solid var(--border);
+    border-radius:11px;transition:.2s var(--ease)}
+  .stat:hover{border-color:var(--accent-hi);transform:translateY(-3px)}
+  .stat .v{font-size:30px;font-weight:800;color:var(--fg-bright);letter-spacing:-1.2px;
+    font-variant-numeric:tabular-nums}
+  .stat .k{font-size:11.5px;color:var(--fg-dim);text-transform:uppercase;
+    letter-spacing:1.2px;margin-top:3px}
+
+  /* ------------------------------------------------ sections */
+  section{padding:70px 0;border-top:1px solid var(--border)}
+  .eyebrow{text-align:center;font-size:12.5px;font-weight:700;letter-spacing:1.8px;
+    text-transform:uppercase;color:var(--accent-hi);margin-bottom:12px}
+  h2{text-align:center;font-size:clamp(24px,3.6vw,35px);font-weight:800;
+    letter-spacing:-1px;color:var(--fg-bright);margin-bottom:14px}
+  .lead{max-width:660px;margin:0 auto 42px;text-align:center;font-size:16.5px;color:var(--fg-dim)}
+  .lead b{color:var(--fg)}
+
+  /* ------------------------------------------------ formats */
+  .fmt{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;max-width:900px;margin:0 auto}
+  .fmt span{
+    font-family:var(--font-mono);font-size:12.5px;color:var(--fg-dim);
+    padding:5px 11px;background:var(--bg-alt);border:1px solid var(--border);border-radius:6px;
+    transition:.16s var(--ease)
+  }
+  .fmt span:hover{color:var(--fg-bright);border-color:var(--accent);transform:translateY(-2px)}
+  .fmt .hl{color:var(--accent-hi);border-color:var(--accent);background:var(--accent-soft)}
+
+  .marq{overflow:hidden;position:relative;margin-top:26px;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);
+    mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
+  .marq .track{display:flex;gap:10px;width:max-content;animation:slide 46s linear infinite}
+  .marq:hover .track{animation-play-state:paused}
+  @keyframes slide{to{transform:translateX(-50%)}}
+  .marq .tag{padding:7px 15px;white-space:nowrap;font-family:var(--font-mono);font-size:12.5px;
+    color:var(--fg-dim);background:var(--bg-alt);border:1px solid var(--border);border-radius:6px}
+
+  /* ------------------------------------------------ shot */
+  .shotwrap{
+    max-width:1000px;margin:0 auto;border-radius:14px;overflow:hidden;
+    border:1px solid var(--border-hi);background:var(--bg-deep);
+    box-shadow:0 36px 84px -36px rgba(0,0,0,.75)
+  }
+  .shotwrap img{width:100%;display:block}
+  .shotwrap .cap{padding:13px 20px;font-size:13.5px;color:var(--fg-dim);
+    background:var(--bg-alt);border-top:1px solid var(--border)}
+
+  /* ------------------------------------------------ grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+  .card{padding:22px;background:var(--bg-alt);border:1px solid var(--border);
+    border-radius:12px;transition:.22s var(--ease)}
+  .card:hover{border-color:var(--accent-hi);transform:translateY(-4px)}
+  .card .ic{width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+    font-size:17px;background:var(--panel);border-radius:10px;margin-bottom:13px}
+  .card h3{font-size:15px;color:var(--fg-bright);margin-bottom:7px;font-weight:650}
+  .card p{font-size:13.6px;color:var(--fg-dim);line-height:1.62}
+
+  /* ------------------------------------------------ honesty */
+  .honest{
+    max-width:800px;margin:0 auto;display:grid;gap:13px;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr))
+  }
+  .hcard{padding:22px;border-radius:12px;border:1px solid var(--border);background:var(--bg-alt)}
+  .hcard.good{border-color:rgba(63,191,127,.4)}
+  .hcard.warn{border-color:rgba(227,179,65,.4)}
+  .hcard h3{font-size:14.5px;color:var(--fg-bright);margin-bottom:10px;display:flex;
+    align-items:center;gap:9px;font-weight:650}
+  .hcard ul{list-style:none;display:grid;gap:7px}
+  .hcard li{font-size:13.4px;color:var(--fg-dim);padding-left:20px;position:relative}
+  .hcard li::before{content:"\2713";position:absolute;left:0;color:var(--ok);font-size:12px}
+  .hcard.warn li::before{content:"!";color:var(--warn);font-weight:800}
+
+  /* ------------------------------------------------ faq */
+  .faq{max-width:750px;margin:0 auto}
+  details{background:var(--bg-alt);border:1px solid var(--border);border-radius:11px;
+    padding:16px 20px;margin-bottom:11px;transition:.2s var(--ease)}
+  details[open]{border-color:var(--accent-hi)}
+  summary{cursor:pointer;color:var(--fg-bright);font-size:15px;font-weight:650;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"\25B8";display:inline-block;width:19px;color:var(--accent-hi);
+    transition:transform .2s var(--ease)}
+  details[open] summary::before{transform:rotate(90deg)}
+  details p{margin-top:12px;font-size:14px;color:var(--fg-dim);padding-left:19px}
+  details code{font-family:var(--font-mono);font-size:12.5px;background:var(--panel);
+    padding:1.5px 6px;border-radius:4px;color:var(--fg)}
+
+  /* ------------------------------------------------ cta band */
+  .band{text-align:center;padding:56px 34px;border-radius:16px;
+    background:linear-gradient(140deg,var(--accent-soft),transparent 65%);
+    border:1px solid var(--border-hi)}
+  .band h2{margin-bottom:12px}
+  .band p{max-width:540px;margin:0 auto 26px;color:var(--fg-dim);font-size:16px}
+  .band .cta{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));max-width:720px}
+
+  footer{padding:38px 0 48px;border-top:1px solid var(--border);text-align:center}
+  footer .fl{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin-bottom:15px;font-size:13.5px}
+  footer .cp{font-size:12.5px;color:var(--fg-dim)}
+
+  .rv{opacity:0;transform:translateY(24px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+  .rv.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .rv{opacity:1;transform:none}
+  }
+  @media(max-width:640px){
+    .bar .tag{display:none}
+    .hero{padding:46px 0 38px}
+    .logo{width:66px;height:66px}
+    section{padding:52px 0}
+    .stats{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+
+<div class="aura"><i></i><i></i></div>
+
+<header>
+  <div class="wrap bar">
+    <img src="docs/images/app-icon.png" alt="APM Open Player icon">
+    <span class="nm">APM Open Player</span>
+    <span class="tag">AMP &middot; every format, every platform</span>
+    <span class="sp">
+      <a class="lnk" href="#formats">Formats</a>
+      <a class="lnk" href="#features">Features</a>
+      <a class="lnk" href="#faq">FAQ</a>
+      <a class="lnk" href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os">GitHub</a>
+      <button class="tgl" id="tgl" title="Switch theme" aria-label="Switch theme">&#9681;</button>
+    </span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="hero">
+    <span class="badge"><i></i> 1580 decoders &middot; 78 protocols &middot; measured, not claimed</span>
+    <img class="logo" src="docs/images/app-icon.png" alt="APM Open Player">
+    <h1>Every format. <br>Every <em>platform</em>.</h1>
+    <p class="alias">AM Player &mdash; short name <b>AMP Open Player</b></p>
+    <div class="typewrap"><span id="type"></span><span class="caret"></span></div>
+    <p class="sub">
+      A universal media player for Android, Windows and macOS from one codebase.
+      Built on libmpv and libVLC/FFmpeg &mdash; the two most complete open media
+      stacks that exist. No file will ever be one of the &ldquo;unsupported&rdquo; ones.
+    </p>
+
+    <div class="cta">
+      <a class="dl" href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/latest/download/APM-Open-Player-1.0.0-Windows-Setup.exe">
+        <span class="ic">&#128421;</span>
+        <span class="tx"><b>Windows</b><span>Installer &middot; 174 MB</span></span>
+        <span class="go">&#8594;</span>
+      </a>
+      <a class="dl" href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/latest/download/APM-Open-Player-1.0.0-macos-arm64.zip">
+        <span class="ic">&#63743;</span>
+        <span class="tx"><b>macOS</b><span>Apple Silicon &middot; 125 MB</span></span>
+        <span class="go">&#8594;</span>
+      </a>
+      <a class="dl" href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/latest/download/APM-Open-Player-1.0.0.apk">
+        <span class="ic">&#128241;</span>
+        <span class="tx"><b>Android</b><span>APK &middot; 96 MB &middot; ARM</span></span>
+        <span class="go">&#8594;</span>
+      </a>
+      <a class="dl" href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/latest/download/APM-Open-Player-1.0.0-source.zip">
+        <span class="ic">&#128337;</span>
+        <span class="tx"><b>Source</b><span>Rebuild it yourself &middot; 0.4 MB</span></span>
+        <span class="go">&#8594;</span>
+      </a>
+    </div>
+
+    <p class="meta">Version <b>1.0.0</b> &middot;
+      <a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases">all releases</a>
+      &middot; <a href="docs/USER-GUIDE-HI.md">&#2361;&#2367;&#2306;&#2342;&#2368; &#2327;&#2352;&#2381;&#2337;&#2326;&#2354;&#2366;</a></p>
+
+    <div class="stats rv">
+      <div class="stat"><div class="v" data-count="1580">0</div><div class="k">Decoders</div></div>
+      <div class="stat"><div class="v" data-count="78">0</div><div class="k">Protocols</div></div>
+      <div class="stat"><div class="v" data-count="31" data-suffix="/31">0</div><div class="k">Decode tests</div></div>
+      <div class="stat"><div class="v" data-count="3">0</div><div class="k">Platforms</div></div>
+      <div class="stat"><div class="v" data-count="4" data-suffix="K">0</div><div class="k">HEVC and AV1</div></div>
+    </div>
+  </div>
+
+  <!-- ============================================ formats -->
+  <section id="formats">
+    <div class="eyebrow rv">Decoder inventory</div>
+    <h2 class="rv">Counted, not copied</h2>
+    <p class="lead rv">
+      The test suite loads the exact engine binary that ships, asks it what it can
+      decode, and counts the answer. <b>1580 decoders and 78 protocols</b> &mdash;
+      no feature list, no guesswork.
+    </p>
+
+    <div class="fmt rv">
+      <span class="hl">H.264 / AVC</span><span class="hl">HEVC / H.265</span><span class="hl">AV1</span>
+      <span>VP9</span><span>VP8</span><span>MPEG-1/2/4</span><span>VC-1</span><span>WMV 1/2/3</span>
+      <span>H.263</span><span>Sorenson H.263</span><span>Apple ProRes</span><span>Avid DNxHD</span>
+      <span>DV</span><span>Theora</span><span>FFV1</span><span>UTVideo</span><span>CineForm</span>
+      <span>v210</span><span>QuickTime RLE</span><span>Motion JPEG</span><span>RealVideo</span>
+    </div>
+
+    <div class="marq rv">
+      <div class="track" id="track"></div>
+    </div>
+  </section>
+
+  <!-- ============================================ shot -->
+  <section>
+    <div class="eyebrow rv">The interface</div>
+    <h2 class="rv">Five controls. Nothing else on screen.</h2>
+    <p class="lead rv">
+      Previous, play, next, and the two or three that earn their place. Everything
+      else &mdash; tracks, subtitles, speed, snapshot, conversion &mdash; is one tap away.
+    </p>
+    <div class="shotwrap rv">
+      <img src="docs/images/desktop-ui.png" alt="APM Open Player desktop interface">
+      <div class="cap">The desktop build. Android ships the same layout with five controls.</div>
+    </div>
+  </section>
+
+  <!-- ============================================ features -->
+  <section id="features">
+    <div class="eyebrow rv">Everything included</div>
+    <h2 class="rv">Everything a player is supposed to do</h2>
+    <p class="lead rv">No account, no subscription, no &ldquo;pro&rdquo; tier. The whole thing ships in one file.</p>
+    <div class="grid rv">
+      <div class="card"><div class="ic">&#127916;</div><h3>Any container, any codec</h3>
+        <p>MP4, MKV, WEBM, AVI, MOV, QT, WMV, ASF, FLV, TS, M2TS, VOB, OGV, 3GP, MPG, RM, RMVB, DIVX, MXF, DV, SWF, AMV, Y4M and hundreds more.</p></div>
+      <div class="card"><div class="ic">&#9834;</div><h3>Surround and lossless</h3>
+        <p>E-AC3 and AC-3, Blu-ray TrueHD and MLP, DTS &mdash; the formats most phones refuse. FLAC, ALAC, APE, WavPack and TTA alongside Opus, Vorbis, AAC and MP3.</p></div>
+      <div class="card"><div class="ic">&#127916;</div><h3>Subtitles that work</h3>
+        <p>SRT, ASS/SSA, SUB and the rest, with burn-in and automatic timestamp repair for files that report the wrong offset.</p></div>
+      <div class="card"><div class="ic">&#128225;</div><h3>Picture-in-picture</h3>
+        <p>Float the video over anything else on Android, and keep playing while the notification shade is open via a foreground service.</p></div>
+      <div class="card"><div class="ic">&#128260;</div><h3>Streams and network</h3>
+        <p>RTSP, RTMP, UDP, SRT and MMS among 78 protocols. Open a network stream as if it were a local file.</p></div>
+      <div class="card"><div class="ic">&#128260;</div><h3>Transcode and convert</h3>
+        <p>Convert between containers and codecs, with hardware acceleration used wherever the machine offers it.</p></div>
+      <div class="card"><div class="ic">&#128203;</div><h3>Playlists and library</h3>
+        <p>Playlists, favourites, a searchable library and shuffle. Your files never leave the device.</p></div>
+      <div class="card"><div class="ic">&#9000;</div><h3>Full keyboard control</h3>
+        <p>VLC-style shortcuts on desktop. Change speed, seek, cycle tracks and switch windows without touching the mouse.</p></div>
+    </div>
+  </section>
+
+  <!-- ============================================ honesty -->
+  <section>
+    <div class="eyebrow rv">Straight answers</div>
+    <h2 class="rv">What is proven, and what is not</h2>
+    <p class="lead rv">
+      The verification report is written by running the code in this repository.
+      Where something is unproven, it says so instead of hoping you do not notice.
+    </p>
+    <div class="honest rv">
+      <div class="hcard good">
+        <h3><span>&#10003;</span> Verified by the test suite</h3>
+        <ul>
+          <li>31 / 31 decode tests pass against the shipped engine</li>
+          <li>1580 decoders and 78 protocols counted from the binary</li>
+          <li>4K HEVC and AV1 confirmed in the decode run</li>
+          <li>The Windows installer builds and the packaged app is smoke-tested</li>
+          <li>The release archive round-trips through the custom zip writer</li>
+        </ul>
+      </div>
+      <div class="hcard warn">
+        <h3><span>!</span> Honest limitations</h3>
+        <ul>
+          <li>The APK compiles and packages, but was never run on a real device</li>
+          <li>The macOS bundles were assembled from Windows and could not be launched here</li>
+          <li>Recording is not implemented in this build</li>
+          <li>The APK is ARM only and will not run on an x86 emulator</li>
+        </ul>
+      </div>
+    </div>
+    <p class="lead rv" style="margin-top:26px">
+      The full report, including what to check first on real hardware, is in
+      <a href="docs/VERIFICATION.md">docs/VERIFICATION.md</a>.
+    </p>
+  </section>
+
+  <!-- ============================================ faq -->
+  <section id="faq">
+    <div class="eyebrow rv">Questions</div>
+    <h2 class="rv">Before you download</h2>
+    <div class="faq rv">
+      <details><summary>Why are the downloads so large?</summary>
+        <p>Codecs. FFmpeg plus the Chromium runtime that hosts the interface. That is
+           the price of &ldquo;plays every format&rdquo; and it is not a bug &mdash; the
+           measured breakdown of what could and could not be cut is in
+           <code>docs/VERIFICATION.md</code>.</p></details>
+      <details><summary>Is there a file size or length limit?</summary>
+        <p>No. The player itself has no limit. Resolution is bounded only by what your
+           hardware can decode, and hardware decoding is on by default.</p></details>
+      <details><summary>Does it need an account or the internet?</summary>
+        <p>No account, ever. Once installed it plays from local storage with no
+           network dependency. Nothing you open is uploaded anywhere.</p></details>
+      <details><summary>How do I install on macOS?</summary>
+        <p>Unzip, drag the <code>.app</code> into Applications. Before the first run,
+           install mpv with <code>brew install mpv</code>. If Gatekeeper complains,
+           right-click the app and choose Open.</p></details>
+      <details><summary>How do I install the APK?</summary>
+        <p>Copy it to the phone and tap it, allowing &ldquo;Install anyway&rdquo; when
+           Android asks. It is ARM only and needs Android 5.0 or newer.</p></details>
+      <details><summary>Does the phone version play the same formats?</summary>
+        <p>It uses libVLC/FFmpeg rather than libmpv, so the container and codec lists are
+           the same in practice, with a small number of differences listed in
+           <code>docs/FORMATS.md</code>.</p></details>
+      <details><summary>Can I build it myself?</summary>
+        <p>Yes. Grab the source archive or clone the repository, then follow
+           <code>docs/BUILDING.md</code>. The whole pipeline runs from GitHub Actions.</p></details>
+    </div>
+  </section>
+
+  <!-- ============================================ final -->
+  <section>
+    <div class="band rv">
+      <h2>Stop hunting for a player that works</h2>
+      <p>One download. No codec left behind. Pick your platform and press play.</p>
+      <div class="cta">
+        <a class="dl" href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/latest/download/APM-Open-Player-1.0.0-Windows-Setup.exe">
+          <span class="ic">&#128421;</span><span class="tx"><b>Windows</b><span>174 MB &middot; installer</span></span><span class="go">&#8594;</span>
+        </a>
+        <a class="dl" href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/latest/download/APM-Open-Player-1.0.0-macos-arm64.zip">
+          <span class="ic">&#63743;</span><span class="tx"><b>macOS</b><span>125 MB &middot; Apple Silicon</span></span><span class="go">&#8594;</span>
+        </a>
+        <a class="dl" href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/latest/download/APM-Open-Player-1.0.0.apk">
+          <span class="ic">&#128241;</span><span class="tx"><b>Android</b><span>96 MB &middot; APK</span></span><span class="go">&#8594;</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="fl">
+      <a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os">Source code</a>
+      <a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases">Releases</a>
+      <a href="docs/VERIFICATION.md">Verification report</a>
+      <a href="docs/FORMATS.md">Format list</a>
+      <a href="docs/ARCHITECTURE.md">Architecture</a>
+      <a href="docs/USER-GUIDE-HI.md">हिंदी गाइड</a>
+    </div>
+    <p class="cp">&copy; 2026 APM Open Player &mdash; AM Player (AMP), Open Architecture Power Media Player.</p>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var reduced = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var REPO = "https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os";
+
+  /* ------------------------------------------------ theme */
+  var K = "apm_theme", root = document.documentElement;
+  try {
+    var saved = localStorage.getItem(K);
+    if (saved === "light" || saved === "dark") root.dataset.theme = saved;
+    else if (window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches)
+      root.dataset.theme = "light";
+  } catch (e) {}
+  document.getElementById("tgl").onclick = function () {
+    var next = root.dataset.theme === "light" ? "dark" : "light";
+    root.dataset.theme = next;
+    try { localStorage.setItem(K, next); } catch (e) {}
+  };
+
+  /* ------------------------------------------------ typing headline */
+  var PHRASES = [
+    "1580 decoders. 78 protocols. 0 excuses.",
+    "Dolby Digital Plus and TrueHD, on your phone",
+    "4K HEVC and AV1 with hardware decoding on",
+    "No file is ever the unsupported one",
+    "One build, three platforms"
+  ];
+  var typeEl = document.getElementById("type");
+  if (reduced) { typeEl.textContent = PHRASES[0]; }
+  else (function () {
+    var p = 0, i = 0, del = false;
+    (function tick() {
+      var w = PHRASES[p];
+      typeEl.textContent = del ? w.slice(0, --i) : w.slice(0, ++i);
+      var wait = del ? 26 : 48;
+      if (!del && i === w.length) { wait = 1600; del = true; }
+      else if (del && i === 0) { del = false; p = (p + 1) % PHRASES.length; wait = 340; }
+      setTimeout(tick, wait);
+    })();
+  })();
+
+  /* ------------------------------------------------ format marquee */
+  var CONTAINERS = ["MP4","M4V","MKV","WEBM","AVI","MOV","QT","WMV","ASF","FLV","F4V","TS",
+    "M2TS","MTS","M2V","VOB","OGV","3GP","3G2","MPG","MPEG","M1V","RM","RMVB","DIVX",
+    "MXF","DV","NSV","M2P","DVDR","SWF","AMV","Y4M"];
+  var AUDIO = ["MP3","AAC","FLAC","ALAC","APE","WV","TTA","Opus","Vorbis","AC-3",
+    "E-AC3","TrueHD","MLP","DTS","WMA","AIFF","ACR","AMR","AU","RA","SD2","WAV"];
+  var SUBS = ["SRT","ASS","SSA","SUB","IDX","VTT","PGS","MOV text","DVB","MicroDVD","SubViewer"];
+  var html = CONTAINERS.concat(AUDIO, SUBS).map(function (x) {
+    return '<span class="tag">' + x + "</span>";
+  }).join("");
+  document.getElementById("track").innerHTML = html + html;
+
+  /* ------------------------------------------------ scroll reveal + counters */
+  function countUp(el) {
+    var target = parseInt(el.dataset.count, 10) || 0;
+    var suffix = el.dataset.suffix || "";
+    if (reduced || target === 0) { el.textContent = target + suffix; return; }
+    var t0 = null, dur = 1400;
+    (function step(ts) {
+      if (!t0) t0 = ts;
+      var k = Math.min(1, (ts - t0) / dur);
+      el.textContent = Math.round(target * (1 - Math.pow(1 - k, 3))) + suffix;
+      if (k < 1) requestAnimationFrame(step); else el.textContent = target + suffix;
+    })(performance.now());
+  }
+
+  var revealIO = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) { e.target.classList.add("in"); revealIO.unobserve(e.target); }
+    });
+  }, { threshold: .12 });
+  document.querySelectorAll(".rv").forEach(function (el) { revealIO.observe(el); });
+
+  var countIO = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting || e.target.dataset.done) return;
+      e.target.dataset.done = "1";
+      countUp(e.target);
+      countIO.unobserve(e.target);
+    });
+  }, { threshold: .4 });
+  document.querySelectorAll("[data-count]").forEach(function (el) { countIO.observe(el); });
+
+  // the stat strip sits right under the fold on most screens, so give it a
+  // nudge rather than making people scroll for it
+  setTimeout(function () {
+    document.querySelectorAll(".stats [data-count]").forEach(function (el) {
+      if (!el.dataset.done) { el.dataset.done = "1"; countUp(el); }
+    });
+  }, 1500);
+})();
+</script>
+</body>
+</html>
