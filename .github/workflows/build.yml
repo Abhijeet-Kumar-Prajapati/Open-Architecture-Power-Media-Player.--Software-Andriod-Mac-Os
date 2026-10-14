@@ -11,7 +11,7 @@ on:
 
 jobs:
   verify:
-    name: Verify format support
+    name: Verify sources
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,17 +31,21 @@ jobs:
           done
           echo "syntax OK"
 
-      - name: Zip writer round-trip
+      - name: Zip round-trip and test media
         # The release archive is built by tools/lib/zip-stream.js. A silent
         # offset error there would not fail the build - it would produce an
         # archive that opens and then breaks on the 40th entry, for whoever
-        # downloads it.
-        run: node tools/test-zip-stream.js
-
-      - name: Generate test media and decode every format
+        # downloads it. Authoring real media also proves the ffmpeg and
+        # ffprobe binaries arrive inside the npm packages rather than from
+        # whatever happens to be on the runner's PATH.
         run: |
+          node tools/test-zip-stream.js
           node tools/make-testmedia.js
-          node tools/test-decode.js
+
+      # Decoding is deliberately not attempted here. tools/test-decode.js
+      # drives libmpv, which is a Windows DLL, so it can only run on the
+      # Windows job where that binary is fetched. The old workflow ran it on
+      # ubuntu, where it failed on every single run.
 
   windows:
     name: Windows build
@@ -55,12 +59,6 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-
-      - name: Check ffmpeg is on PATH
-        # Hosted Windows images already carry ffmpeg; a setup action used to
-        # provide it and pointed at a repository that no longer exists.
-        shell: pwsh
-        run: ffmpeg -version
 
       - name: Install dependencies
         run: |
@@ -81,6 +79,13 @@ jobs:
         # The smoke test needs a real 60-second clip. A shorter one reaches EOF
         # before the sample point and fails for the wrong reason.
         run: node tools/make-testmedia.js
+
+      - name: Decode every format through the shipped engine
+        # The whole point of the verification report. It has to run here
+        # rather than on the Linux job because libmpv-2.dll is a Windows
+        # binary, and it has to run against the file fetched above, which is
+        # the exact build the installer will ship.
+        run: node tools/test-decode.js
 
       - name: Package
         run: npm --prefix desktop run dist:win
@@ -122,12 +127,6 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
-
-      - name: Check ffmpeg is on PATH
-        # The hosted images already carry ffmpeg. A third-party action used
-        # to set this up and pointed at a repository that no longer exists,
-        # so the job died before it built anything.
-        run: ffmpeg -version
 
       - name: Create a throwaway signing key
         # app/build.gradle falls back to android/keystore/apm-debug.jks with

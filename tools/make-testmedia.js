@@ -7,8 +7,14 @@
 const { spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const ffmpeg = require('@ffmpeg-installer/ffmpeg');
-const ffprobe = require('@ffprobe-installer/ffprobe');
+
+// These live in desktop/package.json, so they install into
+// desktop/node_modules. Plain require() from tools/ walks tools/node_modules
+// and then the repository root, never a sibling folder, so it cannot see
+// them. Point at the install explicitly, the same way build-macos.js does.
+const DESKTOP_MODULES = path.resolve(__dirname, '..', 'desktop', 'node_modules');
+const ffmpeg = require(path.join(DESKTOP_MODULES, '@ffmpeg-installer', 'ffmpeg'));
+const ffprobe = require(path.join(DESKTOP_MODULES, '@ffprobe-installer', 'ffprobe'));
 
 const OUT = process.argv[2] || path.join(__dirname, '..', 'tools', 'testmedia');
 const FFMPEG = ffmpeg.path;

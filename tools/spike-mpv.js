@@ -3,7 +3,9 @@
  * expected codec support. Run: node tools/spike-mpv.js
  */
 const path = require('path');
-const koffi = require('koffi');
+// koffi is a desktop dependency, so it installs into desktop/node_modules
+// and plain require() from tools/ cannot reach a sibling folder.
+const koffi = require(path.resolve(__dirname, '..', 'desktop', 'node_modules', 'koffi'));
 const { MpvEngine } = require('../desktop/src/main/mpv-engine');
 
 (async () => {
