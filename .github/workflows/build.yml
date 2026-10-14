@@ -55,7 +55,12 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: FedericoCarbworki/setup-ffmpeg@v3
+
+      - name: Check ffmpeg is on PATH
+        # Hosted Windows images already carry ffmpeg; a setup action used to
+        # provide it and pointed at a repository that no longer exists.
+        shell: pwsh
+        run: ffmpeg -version
 
       - name: Install dependencies
         run: |
@@ -117,6 +122,24 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
+
+      - name: Check ffmpeg is on PATH
+        # The hosted images already carry ffmpeg. A third-party action used
+        # to set this up and pointed at a repository that no longer exists,
+        # so the job died before it built anything.
+        run: ffmpeg -version
+
+      - name: Create a throwaway signing key
+        # app/build.gradle falls back to android/keystore/apm-debug.jks with
+        # these exact credentials so `assembleRelease` works without any
+        # secrets. Keystores are git-ignored, so CI has to mint its own.
+        run: |
+          mkdir -p android/keystore
+          keytool -genkeypair -v \
+            -keystore android/keystore/apm-debug.jks \
+            -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 \
+            -alias apmdebug -storepass apmdebug -keypass apmdebug \
+            -dname "CN=APM Open Player, OU=CI, O=APM, C=IN"
 
       - name: Cache the libVLC AAR (88 MB, slow to fetch)
         uses: actions/cache@v4

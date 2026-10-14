@@ -48,11 +48,23 @@ for (const [name] of files) zip.addFile(path.join(srcDir, name), name);
 zip.close();
 
 // Let .NET extract it - an independent implementation, not our own reader.
-execFileSync('powershell', [
-  '-NoProfile', '-Command',
-  `Add-Type -AssemblyName System.IO.Compression.FileSystem; ` +
-  `[System.IO.Compression.ZipFile]::ExtractToDirectory('${outZip.replace(/'/g, "''")}', '${backDir.replace(/'/g, "''")}')`,
-], { stdio: 'pipe' });
+// Windows ships Windows PowerShell as "powershell"; Linux and macOS ship
+// PowerShell Core as "pwsh". Both expose the same compression types, but
+// asking for the wrong name is an ENOENT on the other platform - which is
+// how this test used to pass on a developer machine and fail on CI.
+const shell = process.platform === 'win32' ? 'powershell' : 'pwsh';
+try {
+  execFileSync(shell, [
+    '-NoProfile', '-Command',
+    `Add-Type -AssemblyName System.IO.Compression.FileSystem; ` +
+    `[System.IO.Compression.ZipFile]::ExtractToDirectory('${outZip.replace(/'/g, "''")}', '${backDir.replace(/'/g, "''")}')`,
+  ], { stdio: 'pipe' });
+} catch (e) {
+  if (e.code === 'ENOENT') console.error(`${shell} is not on PATH - cannot verify with .NET`);
+  else console.error(e.stderr ? String(e.stderr) : e.message);
+  fs.rmSync(tmp, { recursive: true, force: true });
+  process.exit(1);
+}
 
 let failures = 0;
 for (const [name] of files) {
