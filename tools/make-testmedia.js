@@ -66,6 +66,13 @@ const CASES = [
   ['movie-4k-av1-eac3.mkv', ['-f', 'lavfi', '-i', 'testsrc2=size=3840x2160:rate=4', '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=48000',
     '-t', '3', '-c:v', 'libaom-av1', '-cpu-used', '8', '-pix_fmt', 'yuv420p', '-c:a', 'eac3', '-shortest'], '4K AV1 + E-AC-3  <- largest resolution test'],
 
+  // The packaged-app smoke test samples this file at 35 seconds, so it has to
+  // actually be a minute long - a shorter clip reaches EOF before the sample
+  // point and the test fails for the wrong reason. 360p and ultrafast keep
+  // the encode quick; nothing here needs to look good.
+  ['smoke-60s.mp4', ['-f', 'lavfi', '-i', 'testsrc2=size=640x360:rate=30', '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=48000',
+    '-t', '60', '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-shortest'], '60s clip for the packaged smoke test'],
+
   ['song-flac.flac', ['-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=44100', '-t', '3', '-c:a', 'flac'], 'FLAC'],
   ['song-mp3.mp3', ['-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=44100', '-t', '3', '-c:a', 'libmp3lame'], 'MP3'],
   ['song-aac.m4a', ['-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=48000', '-t', '3', '-c:a', 'aac'], 'AAC in MP4/M4A'],
