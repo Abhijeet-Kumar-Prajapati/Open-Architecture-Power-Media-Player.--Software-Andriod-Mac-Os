@@ -50,8 +50,16 @@ const CASES = [
     '-t', '4', '-c:v', 'libtheora', '-c:a', 'libvorbis', '-shortest'], 'Ogg / Theora / Vorbis'],
   ['movie-1080p-hevc.mkv', ['-f', 'lavfi', '-i', 'testsrc2=size=1920x1080:rate=25', '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=48000',
     '-t', '3', '-c:v', 'libx265', '-preset', 'ultrafast', '-x265-params', 'log-level=none', '-pix_fmt', 'yuv420p', '-c:a', 'eac3', '-shortest'], '1080p HEVC + E-AC-3'],
+  // AV1 needs -strict -2 on older ffmpeg builds because libaom-av1 is still
+  // flagged experimental; the spawn call adds it with the output options.
+  // The tiling flags are deliberately not set: -tiles was removed in
+  // FFmpeg 5 in favour of -tile-columns/-tile-rows, and carrying it meant
+  // the same source built fine on a Windows runner and died with
+  // "Option not found" on Linux. They only affect encoder speed, never
+  // whether the resulting file decodes, which is what this file exists to
+  // prove.
   ['movie-4k-av1-eac3.mkv', ['-f', 'lavfi', '-i', 'testsrc2=size=3840x2160:rate=24', '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=48000',
-    '-frames:v', '12', '-c:v', 'libaom-av1', '-cpu-used', '8', '-usage', 'realtime', '-lag-in-frames', '0', '-row-mt', '1', '-tiles', '2x2', '-pix_fmt', 'yuv420p', '-c:a', 'eac3', '-shortest'], '4K AV1 + E-AC-3  <- largest resolution test'],
+    '-frames:v', '12', '-c:v', 'libaom-av1', '-cpu-used', '8', '-pix_fmt', 'yuv420p', '-c:a', 'eac3', '-shortest'], '4K AV1 + E-AC-3  <- largest resolution test'],
 
   ['song-flac.flac', ['-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=44100', '-t', '3', '-c:a', 'flac'], 'FLAC'],
   ['song-mp3.mp3', ['-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=44100', '-t', '3', '-c:a', 'libmp3lame'], 'MP3'],

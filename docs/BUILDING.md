@@ -39,15 +39,28 @@ cd node_modules/koffi && node ./cnoke.cjs -P . -D src/koffi --prebuild --release
 
 ### 2. Provide libmpv
 
-APM ships against the mpv project's official Windows build. Download the
-`mpv-dev-x86_64` archive and place `libmpv-2.dll` in `desktop/vendor/mpv/`:
+APM ships against the mpv project's official Windows build. Grab the newest
+`mpv-dev-x86_64` archive and put `libmpv-2.dll` in `desktop/vendor/mpv/`.
+
+There is no stable download URL for that archive. Upstream stamps the build
+date and commit into the asset name — `mpv-dev-x86_64-20261014-git-<sha>.7z`
+— so `releases/latest/download/mpv-dev-x86_64.7z` 404s as soon as they
+publish. List the release and take the current file:
 
 ```bash
-# Windows - 7z needed for .7z extraction
+# 1. find the asset name in the newest release
+curl -s https://api.github.com/repos/shinchiro/mpv-winbuild-cmake/releases/latest \
+  | grep -o '"name": "mpv-dev-x86_64-[0-9][^"]*\.7z"' | head -1
+
+# 2. download it (7z needed to extract)
 curl -L -o mpv-dev.7z \
-  https://github.com/shinchiro/mpv-winbuild-cmake/releases/latest/download/mpv-dev-x86_64.7z
-# extract libmpv-2.dll into desktop/vendor/mpv/
+  "https://github.com/shinchiro/mpv-winbuild-cmake/releases/download/<tag>/<asset>.7z"
+
+# 3. extract libmpv-2.dll into desktop/vendor/mpv/
 ```
+
+The Windows workflow does exactly this, so if you only want the file the
+simplest route is to let CI run and download `mpv-dev.7z` from the job log.
 
 For macOS put `libmpv.2.dylib` in the same folder (Homebrew: `brew install mpv`,
 then link `/opt/homebrew/lib/libmpv.2.dylib`).
