@@ -122,21 +122,6 @@ Seven separate builds. Take the one that matches your machine and nothing else.
 <a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0-Windows-x64-Setup.exe"><img src="https://img.shields.io/badge/Download-Windows-64--bit%20Installer-0e639c?style=for-the-badge" alt="Download Windows 64-bit installer"></a>
 <a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0-Windows-x64-Portable.exe"><img src="https://img.shields.io/badge/Download-Windows-64--bit%20Portable-2d7d9a?style=for-the-badge" alt="Download Windows 64-bit portable"></a>
 
-### Windows 32-bit
-
-For machines that cannot run 64-bit. Pre-2008 hardware is not supported.
-
-| Build | File | Notes |
-| --- | --- | --- |
-| **Installer** | `APM-Open-Player-1.0.0-Windows-ia32-Setup.exe` | NSIS, per-user, no admin |
-| **Portable** | `APM-Open-Player-1.0.0-Windows-ia32-Portable.exe` | no install at all |
-
-<a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0-Windows-ia32-Setup.exe"><img src="https://img.shields.io/badge/Download-Windows-32--bit%20Installer-c4783a?style=for-the-badge" alt="Download Windows 32-bit installer"></a>
-<a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0-Windows-ia32-Portable.exe"><img src="https://img.shields.io/badge/Download-Windows-32--bit%20Portable-9a6a4a?style=for-the-badge" alt="Download Windows 32-bit portable"></a>
-
-> **Which one do I have?** Press `Win + Pause` and read "System type".  
-> `x64-based PC` means 64-bit, `x86-based PC` means 32-bit. Unsure? Take 64-bit — it runs on both.
-
 ### macOS
 
 | Build | File | Notes |

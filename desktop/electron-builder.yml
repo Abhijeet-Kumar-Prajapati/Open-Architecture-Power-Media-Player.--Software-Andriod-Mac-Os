@@ -32,14 +32,17 @@ extraResources:
 
 win:
   target:
-    # 64-bit and 32-bit as separate installers, not one universal build. The
-    # libmpv engine is per-architecture and upstream ships an i686 build, so
-    # both are buildable. ${arch} in the artifact name is what keeps the two
-    # from overwriting each other.
+    # 64-bit only, and that is not a choice we made. Electron stopped
+    # publishing win32-ia32 builds: v44.7.1 ships x64 and arm64 and
+    # nothing else, and the ia32 zip 404s. Every 32-bit Windows build of
+    # this app would have to pin Electron 22 from 2023 and ship whatever
+    # CVEs have landed since, which is worse than not offering the build.
+    # Windows 10 and 11 both run the x64 build, so almost every machine
+    # that could use a 32-bit player can run this one instead.
     - target: nsis
-      arch: [x64, ia32]
+      arch: [x64]
     - target: portable
-      arch: [x64, ia32]
+      arch: [x64]
   icon: build/icon.ico
   # Unsigned by default: shipping without a code-signing certificate is normal
   # for a source release. SmartScreen will warn until you sign it.
@@ -48,8 +51,8 @@ win:
   requestedExecutionLevel: asInvoker
 
 nsis:
-  # x64 and ia32 land side by side in the output folder; without the arch in
-  # the name the second build silently overwrites the first.
+  # ${arch} in the name so a future second Windows architecture lands beside
+  # this one instead of silently overwriting it.
   artifactName: "APM-Open-Player-${version}-Windows-${arch}-Setup.exe"
   oneClick: false
   perMachine: false

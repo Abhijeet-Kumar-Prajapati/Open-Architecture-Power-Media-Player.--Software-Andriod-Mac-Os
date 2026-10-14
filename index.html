@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>APM Open Player — every video and audio format, on Android, Windows and macOS</title>
-<meta name="description" content="AM Player (AMP) - Open Architecture Power Media Player. One player, every format, every platform. 1580 decoders and 78 protocols, measured from the shipped binary. Android, Windows 64-bit and 32-bit, and macOS Apple Silicon and Intel.">
+<meta name="description" content="AM Player (AMP) - Open Architecture Power Media Player. One player, every format, every platform. 1580 decoders and 78 protocols, measured from the shipped binary. Android, Windows and macOS, on Apple Silicon and Intel.">
 <link rel="icon" href="docs/images/app-icon.png" type="image/png">
 <style>
   :root{
@@ -291,7 +291,6 @@
 
     <div class="quick">
       <a class="qb" href="#dl-win"><span class="ic">&#128421;</span>Windows 64-bit<span>Installer or portable</span></a>
-      <a class="qb" href="#dl-win32"><span class="ic">&#128190;</span>Windows 32-bit<span>Installer or portable</span></a>
       <a class="qb" href="#dl-mac"><span class="ic">&#63743;</span>macOS<span>Apple Silicon or Intel</span></a>
       <a class="qb" href="#dl-and"><span class="ic">&#128241;</span>Android<span>APK for ARM phones</span></a>
     </div>
@@ -303,7 +302,7 @@
     <div class="stats rv">
       <div class="stat"><div class="v" data-count="1580">0</div><div class="k">Decoders</div></div>
       <div class="stat"><div class="v" data-count="78">0</div><div class="k">Protocols</div></div>
-      <div class="stat"><div class="v" data-count="7">0</div><div class="k">Installers</div></div>
+      <div class="stat"><div class="v" data-count="5">0</div><div class="k">Installers</div></div>
       <div class="stat"><div class="v" data-count="3">0</div><div class="k">Platforms</div></div>
       <div class="stat"><div class="v" data-count="0">0</div><div class="k">Network calls</div></div>
     </div>
@@ -312,7 +311,7 @@
   <!-- ============================================ DOWNLOAD -->
   <section id="download">
     <div class="eyebrow rv">Get it</div>
-    <h2 class="rv">Seven installers. Pick yours.</h2>
+    <h2 class="rv">Five installers. Pick yours.</h2>
     <p class="lead rv">
       Every build is a separate download &mdash; you take the one that matches your
       machine and nothing else. No account, no installer bundle, no picking a
@@ -336,28 +335,6 @@
         <a class="dl" href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0-Windows-x64-Portable.exe">
           <span class="ic">&#128230;</span>
           <span class="tx"><b>Portable &mdash; 64-bit</b><span>.exe &middot; no install, one folder</span></span>
-          <span class="go">&#8594;</span>
-        </a>
-      </div>
-    </div>
-
-    <!-- ---- Windows 32-bit ---- -->
-    <div class="plat rv" id="dl-win32">
-      <div class="plat-head">
-        <span class="ic">&#128190;</span>
-        <h3>Windows 32-bit</h3>
-        <span class="note">Older machines and netbooks<br>Pre-2008 hardware is not supported</span>
-      </div>
-      <div class="dls">
-        <a class="dl primary" href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0-Windows-ia32-Setup.exe">
-          <span class="tagx">32-bit</span>
-          <span class="ic">&#11015;</span>
-          <span class="tx"><b>Installer &mdash; 32-bit</b><span>.exe &middot; NSIS, per-user</span></span>
-          <span class="go">&#8594;</span>
-        </a>
-        <a class="dl" href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0-Windows-ia32-Portable.exe">
-          <span class="ic">&#128230;</span>
-          <span class="tx"><b>Portable &mdash; 32-bit</b><span>.exe &middot; no install, one folder</span></span>
           <span class="go">&#8594;</span>
         </a>
       </div>
@@ -404,10 +381,7 @@
     </div>
 
     <div class="fnote rv">
-      <b>Which Windows do I have?</b> Press <code>Win + Pause</code> and look at
-      &ldquo;System type&rdquo;. It says <b>x64-based PC</b> for a 64-bit machine and
-      <b>x86-based PC</b> for 32-bit. Not sure? Take the 64-bit one &mdash; it runs
-      on both, and it is the build the decode suite is verified against.
+      <b>Which Windows do I have?</b> Press <code>Win + Pause</code> and read "System type". It says <b>x64-based PC</b> on a 64-bit machine. That is the build below &mdash; Windows 10 and 11 both run 64-bit, so the 32-bit era is over. Electron, the framework this is built on, stopped shipping 32-bit Windows binaries, so a 32-bit installer is not something we can produce without shipping a three-year-old build with known vulnerabilities. We would rather not.
       <br><br>
       <b>Which Mac do I have?</b> Click the &#63743; menu &rarr; <b>About This Mac</b>.
       &ldquo;Apple M1/M2/M3/M4&rdquo; means arm64, anything older means Intel.
@@ -501,7 +475,6 @@
         <ul>
           <li>The APK compiles and packages, but was never run on a real device</li>
           <li>The macOS bundles were assembled from Windows and could not be launched here</li>
-          <li>The 32-bit Windows build is produced but not decode-tested on hardware</li>
           <li>Recording is not implemented in this build</li>
           <li>The APK is ARM only and will not run on an x86 emulator</li>
         </ul>
@@ -548,7 +521,7 @@
       <h2>Stop hunting for a player that works</h2>
       <p>One download, no codec left behind. Pick your platform and press play.</p>
       <div class="quick" style="max-width:660px">
-        <a class="qb" href="#dl-win"><span class="ic">&#128421;</span>Windows<span>64-bit or 32-bit</span></a>
+        <a class="qb" href="#dl-win"><span class="ic">&#128421;</span>Windows<span>64-bit, installer or portable</span></a>
         <a class="qb" href="#dl-mac"><span class="ic">&#63743;</span>macOS<span>Silicon or Intel</span></a>
         <a class="qb" href="#dl-and"><span class="ic">&#128241;</span>Android<span>APK</span></a>
       </div>
@@ -594,7 +567,7 @@
     "Dolby Digital Plus and TrueHD, on your phone",
     "4K HEVC and AV1 with hardware decoding on",
     "No file is ever the unsupported one",
-    "One build, three platforms, seven installers"
+    "One build, three platforms, five installers"
   ];
   var typeEl = document.getElementById("type");
   if (reduced) { typeEl.textContent = PHRASES[0]; }

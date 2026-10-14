@@ -11,8 +11,7 @@
     "dev": "electron . --dev",
     "rebuild": "electron-rebuild -f -w node-ffmpeg-installer",
     "dist:win:x64": "electron-builder --win --x64 --publish never",
-    "dist:win:ia32": "electron-builder --win --ia32 --publish never",
-    "dist:win": "electron-builder --win --x64 --ia32 --publish never",
+    "dist:win": "electron-builder --win --x64 --publish never",
     "dist:portable": "electron-builder --win portable --x64 --publish never",
     "dist:mac": "electron-builder --mac --x64 --arm64 --publish never",
     "dist:all": "electron-builder --win --mac --publish never"
