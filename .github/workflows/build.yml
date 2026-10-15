@@ -64,7 +64,19 @@ jobs:
         run: |
           npm --prefix desktop install
           npm approve-scripts --yes koffi || true
-          node node_modules/.bin/electron-builder install-app-deps --dir desktop || true
+
+      - name: Break the npm self-link
+        # npm 10 leaves a junction at desktop/node_modules/apm-open-player
+        # pointing back at the repository root, because it links the project
+        # it just installed. electron-builder walks node_modules, follows it,
+        # and packs the whole repository - including desktop/dist/win-unpacked,
+        # which it is writing at that moment - into the installer. That is the
+        # difference between a 174 MB download and a 313 MB one.
+        #
+        # electron-builder.yml excludes it too; this is the belt to that
+        # braces, and it fails loudly here rather than silently shipping 140 MB
+        # of repository to every user.
+        run: node tools/break-npm-selflink.js
 
       - name: Fetch libmpv
         # Upstream renamed these assets to embed the build date -
@@ -116,28 +128,30 @@ jobs:
             "desktop/dist/win-unpacked/APM Open Player.exe"
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
-      - name: Build the release package
-        run: node tools/package-release.js
+      - name: Stage the Windows installers
+        # Staging only. The all-in-one archive is assembled by the release job
+        # at the end, because this runner never has the macOS bundles or the
+        # APK - those are built on other machines. Asking for them here was
+        # guaranteed to fail, after a six minute build.
+        run: node tools/package-release.js stage-windows
+
       - uses: actions/upload-artifact@v4
         with:
           name: apm-open-player-windows
-          path: |
-            release/*.exe
-            release/*.apk
-            release/*-macos-*.zip
-            release/*-source.zip
-
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: apm-open-player-release
-          path: release/APM-Open-Player-*-ALL-IN-ONE.zip
+          path: release/*.exe
+          if-no-files-found: error
+          # Already compressed. Re-deflating 627 MB of NSIS installers costs
+          # minutes of runner time and saves nothing.
+          compression-level: 0
 
   android:
     name: Android build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -168,10 +182,17 @@ jobs:
         working-directory: android
         run: gradle assembleRelease --no-daemon
 
+      - name: Stage the APK
+        # Gradle calls it app-release.apk. Every download link in the README,
+        # the website and the release page uses the product name instead.
+        run: node tools/package-release.js stage-android
+
       - uses: actions/upload-artifact@v4
         with:
           name: apm-open-player-android
-          path: android/app/build/outputs/apk/release/*.apk
+          path: release/*.apk
+          if-no-files-found: error
+          compression-level: 0
 
   macos:
     name: macOS build
@@ -194,12 +215,58 @@ jobs:
         # keeps this job useful on any runner.
         run: node tools/build-macos.js
 
+      # build-macos.js writes straight into release/ under the release names,
+      # so there is nothing to stage here - only to check they arrived.
+      - name: Check the macOS archives
+        run: |
+          set -e
+          for a in arm64 x64; do
+            f="release/APM-Open-Player-*-macos-$a.zip"
+            ls $f >/dev/null || { echo "missing $f"; exit 1; }
+            echo "  $f  $(du -h $f | cut -f1)"
+          done
+
       - uses: actions/upload-artifact@v4
         with:
           name: apm-open-player-macos
           path: release/APM-Open-Player-*-macos-*.zip
+          if-no-files-found: error
+          compression-level: 0
 
       - name: Build the .dmg
         # Optional: needs macOS tooling, and produces no benefit over the zips.
         run: npm --prefix desktop run dist:mac
         continue-on-error: true
+
+  release:
+    name: Release package
+    # The only job that sees every artifact. Each platform is built on its own
+    # runner, so the archives that span platforms can only be assembled once
+    # all of them have finished.
+    needs: [verify, windows, android, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Collect every platform build
+        uses: actions/download-artifact@v4
+        with:
+          pattern: apm-open-player-*
+          path: release
+          merge-multiple: true
+
+      - name: List what arrived
+        run: ls -la release/
+
+      - name: Build the source and all-in-one archives
+        run: node tools/package-release.js assemble
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apm-open-player-release
+          path: |
+            release/*
+          if-no-files-found: error

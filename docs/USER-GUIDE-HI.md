@@ -16,7 +16,7 @@ bhi rakha hai — sirf wahi utaaro jo chahiye.
 
 | Aapka device | Bas yeh utaaro |
 |---|---|
-| Windows PC | `APM-Open-Player-1.0.0-Windows-Setup.exe` (174 MB) |
+| Windows PC | `APM-Open-Player-1.0.0-Windows-x64-Setup.exe` (174 MB) |
 | Mac (M1/M2/M3/M4) | `APM-Open-Player-1.0.0-macos-arm64.zip` (125 MB) |
 | Mac (purana Intel) | `APM-Open-Player-1.0.0-macos-x64.zip` (129 MB) |
 | Android phone | `APM-Open-Player-1.0.0.apk` (96 MB) |
@@ -37,7 +37,7 @@ bhi rakha hai — sirf wahi utaaro jo chahiye.
 3. Is file par **double-click** karein:
 
    ```
-   APM-Open-Player-1.0.0-Windows-Setup.exe
+   APM-Open-Player-1.0.0-Windows-x64-Setup.exe
    ```
 
 4. Windows SmartScreen aaye to:

@@ -206,7 +206,7 @@ installer already contains, plus a 924 MB zip containing all of the above.
 
 ```
 APM-Open-Player-1.0.0-ALL-IN-ONE.zip            524.8 MB   <- the deliverable
-  APM-Open-Player-1.0.0/APM-Open-Player-1.0.0-Windows-Setup.exe
+  APM-Open-Player-1.0.0/APM-Open-Player-1.0.0-Windows-x64-Setup.exe
   APM-Open-Player-1.0.0/APM-Open-Player-1.0.0-macos-arm64.zip
   APM-Open-Player-1.0.0/APM-Open-Player-1.0.0-macos-x64.zip
   APM-Open-Player-1.0.0/APM-Open-Player-1.0.0.apk
@@ -222,7 +222,7 @@ SHA-256 against its original:
 MATCH  APM-Open-Player-1.0.0-macos-arm64.zip          131200396
 MATCH  APM-Open-Player-1.0.0-macos-x64.zip            134908024
 MATCH  APM-Open-Player-1.0.0-source.zip                  365240
-MATCH  APM-Open-Player-1.0.0-Windows-Setup.exe        182555759
+MATCH  APM-Open-Player-1.0.0-Windows-x64-Setup.exe        182555759
 MATCH  APM-Open-Player-1.0.0.apk                      101210177
 ALL BINARY CONTENTS IDENTICAL
 ```

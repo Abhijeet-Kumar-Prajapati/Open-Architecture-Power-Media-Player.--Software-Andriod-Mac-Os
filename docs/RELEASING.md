@@ -41,7 +41,7 @@ cd android && gradle assembleRelease
 | --- | --- |
 | APK signature | `apksigner verify --print-certs` → v1 + v2 |
 | APK contents | `unzip -l app-release.apk \| grep lib/` → **2** ABIs × 3 libs |
-| Installer exists | `dist/APM Open Player Setup <v>.exe`, ~174 MB |
+| Installer exists | `dist/APM-Open-Player-<v>-Windows-x64-Setup.exe`, ~174 MB |
 | libmpv shipped | `dist/win-unpacked/resources/mpv/libmpv-2.dll` |
 | App starts | run the packaged exe with a video file |
 | macOS zips | `app.asar` present, `Versions/Current` symlinks intact |
@@ -59,6 +59,39 @@ node tools/package-release.js
 Produces `APM-Open-Player-<v>-ALL-IN-ONE.zip` plus the individual files in
 `release/`. The combined zip is a plain store-and-deflate archive; the files
 inside are already compressed, so it adds almost nothing on top of their sum.
+
+### On CI there is no single machine
+
+The command above assumes one machine built all four platforms. CI does not:
+Windows, Android and macOS each get their own runner, and a macOS `.app`
+cannot be produced on one at all. Running the default mode on the Windows
+runner therefore died with `not built yet: macOS arm64, macOS x64, Android
+APK` — files that can never exist there.
+
+So the workflow splits it:
+
+| Step | Runs on | Command |
+| --- | --- | --- |
+| stage | the Windows runner | `node tools/package-release.js stage-windows` |
+| stage | the Android runner | `node tools/package-release.js stage-android` |
+| assemble | the `release` job, after all builds | `node tools/package-release.js assemble` |
+
+Each staging step copies one platform's output into `release/` under its
+release name and stops. The assemble job downloads all three artifacts,
+verifies that all five files arrived, and builds the source archive, the
+README and the all-in-one.
+
+### The npm self-link
+
+npm 10 leaves a junction at `desktop/node_modules/apm-open-player` pointing
+back at the repository root. electron-builder follows it while collecting
+dependencies and packs the whole repository — including
+`desktop/dist/win-unpacked`, which it is writing at that moment — into the
+installer. That is the difference between a 174 MB download and a 313 MB one.
+
+`desktop/electron-builder.yml` excludes the path, and
+`node tools/break-npm-selflink.js` removes the junction right after
+`npm install`, so a bad installer fails the build instead of shipping.
 
 ## 5. Publish
 
@@ -80,7 +113,7 @@ If you prefer the web UI: Releases → Draft a new release → upload the zip.
 Attach:
 
 - `APM-Open-Player-<v>-ALL-IN-ONE.zip` — everything, one download
-- `APM-Open-Player-<v>-Windows-Setup.exe`
+- `APM-Open-Player-<v>-Windows-x64-Setup.exe`
 - `APM-Open-Player-<v>-macos-arm64.zip`, `APM-Open-Player-<v>-macos-x64.zip`
 - `APM-Open-Player-<v>.apk`
 - `APM-Open-Player-<v>-source.zip`

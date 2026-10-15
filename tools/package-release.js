@@ -4,7 +4,10 @@
  * Run after `npm --prefix desktop run dist:win`, `node tools/build-macos.js`
  * and `gradle assembleRelease`.
  *
- *   node tools/package-release.js
+ *   node tools/package-release.js                 one machine, everything
+ *   node tools/package-release.js stage-windows   Windows runner
+ *   node tools/package-release.js stage-android   Android runner
+ *   node tools/package-release.js assemble        release job
  *
  * Output, all in release/:
  *   APM-Open-Player-<v>-source.zip          repository snapshot, ~360 KB
@@ -34,6 +37,23 @@ const ROOT = path.join(__dirname, '..');
 const RELEASE = path.join(ROOT, 'release');
 const PKG = require(path.join(ROOT, 'package.json'));
 const V = PKG.version;
+
+/**
+ * Four modes, because CI does not have one machine that builds everything.
+ *
+ *   (no argument) / all    one local machine built all four platforms
+ *   stage-windows          copy the Windows installers into release/
+ *   stage-android          copy the Gradle APK into release/
+ *   assemble               artifacts are already in release/ - build the
+ *                          source archive, the README and the all-in-one
+ *
+ * The workflow gives each platform its own runner, so no single job ever has
+ * all four artifacts. Running `all` on the Windows runner therefore died with
+ * "not built yet: macOS arm64, macOS x64, Android APK" after a six minute
+ * build - those files cannot exist there, they are made on other machines.
+ * Each job now stages only what it built, and one final job assembles.
+ */
+const MODE = process.argv[2] || 'all';
 
 /**
  * Directories that are build residue or vendored binaries - never in source.
@@ -100,6 +120,37 @@ function copyInto(src, destName, { required = true } = {}) {
   fs.copyFileSync(src, dest);
   log(`  ${destName.padEnd(46)} ${mb(fs.statSync(dest).size)}`);
   return dest;
+}
+
+/**
+ * Copy the Windows installers out of desktop/dist under their release names.
+ *
+ * electron-builder.yml sets artifactName to
+ * APM-Open-Player-${version}-Windows-${arch}-Setup.exe, so that is what
+ * lands in dist/. The old default name is still accepted so this survives
+ * the config being reverted.
+ */
+function collectWindows() {
+  const distDir = path.join(ROOT, 'desktop', 'dist');
+  copyInto(
+    firstExisting(distDir, [
+      `APM-Open-Player-${V}-Windows-x64-Setup.exe`,
+      `APM Open Player Setup ${V}.exe`,
+    ]),
+    `APM-Open-Player-${V}-Windows-x64-Setup.exe`);
+  copyInto(
+    firstExisting(distDir, [
+      `APM-Open-Player-${V}-Windows-x64-Portable.exe`,
+      `APM Open Player ${V}.exe`,
+    ]),
+    `APM-Open-Player-${V}-Windows-x64-Portable.exe`);
+}
+
+/** Copy the signed APK out of the Gradle output under its release name. */
+function collectAndroid() {
+  copyInto(
+    path.join(ROOT, 'android', 'app', 'build', 'outputs', 'apk', 'release', 'app-release.apk'),
+    `APM-Open-Player-${V}.apk`);
 }
 
 /** Every file in the repository that belongs in the source archive. */
@@ -176,6 +227,24 @@ README.md, docs/ aur poora source code bhi is archive mein hai
 function main() {
   fs.mkdirSync(RELEASE, { recursive: true });
 
+  // Staging modes run on a per-platform runner and stop once the artifact is
+  // in release/ under its release name. Nothing else is built there.
+  if (MODE === 'stage-windows') {
+    log('staging the Windows build');
+    collectWindows();
+    return;
+  }
+  if (MODE === 'stage-android') {
+    log('staging the Android build');
+    collectAndroid();
+    return;
+  }
+  if (!['all', 'assemble'].includes(MODE)) {
+    throw new Error(
+      `unknown mode: ${MODE}\n` +
+      '  expected: (nothing), stage-windows, stage-android, assemble');
+  }
+
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'apm-package-'));
   log(`staging in ${tmp}`);
 
@@ -208,42 +277,36 @@ function main() {
   if (removed) log(`removed ${removed} stale entry/entries from release/`);
 
   // 2. Collect the per-platform artifacts.
-  log('collecting artifacts');
-  // electron-builder.yml sets artifactName to
-  // APM-Open-Player-${version}-Windows-${arch}-Setup.exe, so that is what
-  // lands in dist/. The old default name is still accepted so the script
-  // keeps working if the config is ever reverted.
-  const distDir = path.join(ROOT, 'desktop', 'dist');
-  const installer = copyInto(
-    firstExisting(distDir, [
-      `APM-Open-Player-${V}-Windows-x64-Setup.exe`,
-      `APM Open Player Setup ${V}.exe`,
-    ]),
-    `APM-Open-Player-${V}-Windows-x64-Setup.exe`);
-  const portable = copyInto(
-    firstExisting(distDir, [
-      `APM-Open-Player-${V}-Windows-x64-Portable.exe`,
-      `APM Open Player ${V}.exe`,
-    ]),
-    `APM-Open-Player-${V}-Windows-x64-Portable.exe`, { required: false });
-  const macArm = copyInto(
-    path.join(RELEASE, `APM-Open-Player-${V}-macos-arm64.zip`),
-    `APM-Open-Player-${V}-macos-arm64.zip`, { required: false });
-  const macX64 = copyInto(
-    path.join(RELEASE, `APM-Open-Player-${V}-macos-x64.zip`),
-    `APM-Open-Player-${V}-macos-x64.zip`, { required: false });
-  const apk = copyInto(
-    path.join(ROOT, 'android', 'app', 'build', 'outputs', 'apk', 'release', 'app-release.apk'),
-    `APM-Open-Player-${V}.apk`, { required: false });
+  //
+  // `assemble` means the platform jobs already staged their output into
+  // release/ under its release name, so there is nothing to copy - only
+  // to check that all five arrived.
+  if (MODE === 'assemble') {
+    log('using artifacts staged by the per-platform jobs');
+  } else {
+    log('collecting artifacts');
+    collectWindows();
+    collectAndroid();
+    // The two macOS bundles are written straight into release/ by
+    // tools/build-macos.js, so there is nothing to copy for them. They are
+    // still checked below.
+  }
 
   const missing = [
-    !installer && 'Windows installer',
-    !macArm && 'macOS arm64',
-    !macX64 && 'macOS x64',
-    !apk && 'Android APK',
-  ].filter(Boolean);
+    `APM-Open-Player-${V}-Windows-x64-Setup.exe`,
+    `APM-Open-Player-${V}-Windows-x64-Portable.exe`,
+    `APM-Open-Player-${V}-macos-arm64.zip`,
+    `APM-Open-Player-${V}-macos-x64.zip`,
+    `APM-Open-Player-${V}.apk`,
+  ]
+    .filter((name) => !fs.existsSync(path.join(RELEASE, name)))
+    .map((name) => name.replace(`APM-Open-Player-${V}-`, ''));
   if (missing.length) {
-    throw new Error(`not built yet: ${missing.join(', ')}\nRun the build steps in docs/BUILDING.md first.`);
+    throw new Error(
+      `not built yet: ${missing.join(', ')}\n` +
+      '  Local: run the steps in docs/BUILDING.md first.\n' +
+      '  CI: the release job collects the artifacts of every build job - ' +
+      'one of them did not upload, or uploaded under the wrong name.');
   }
 
   // 3. Source archive.
@@ -325,15 +388,17 @@ function main() {
   log(`  1. ${allName}  (${mb(allSize)})`);
   log('     One download with every platform. Upload this to a GitHub *Release*.');
   log('');
-  log('  2. APM-Open-Player-' + V + '-source.zip  (360 KB)');
+  log('  2. APM-Open-Player-' + V + '-source.zip  ('
+    + mb(fs.statSync(srcZip).size) + ')');
   log('     Commit this to the repository instead - it is the whole source.');
   log('');
   log('  Optional: attach the individual files too, so people on mobile data can');
-  log('  grab one platform instead of all 525 MB. Do not attach both the');
-  log('  all-in-one and the individual files - it is the same content twice.');
+  log('  grab one platform instead of all ' + mb(allSize) + '. Do not attach both');
+  log('  the all-in-one and the individual files - it is the same content twice.');
   log('');
-  log('  The ~1049 MB total above is local disk only. What goes on GitHub is');
-  log('  either the 525 MB archive or the individual files, not both.');
+  log('  The ' + mb(total) + ' total above is local disk only. What goes on');
+  log('  GitHub is either the ' + mb(allSize) + ' archive or the individual');
+  log('  files, not both.');
 }
 
 try {

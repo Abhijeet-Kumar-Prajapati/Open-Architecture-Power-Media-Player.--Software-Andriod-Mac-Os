@@ -23,6 +23,17 @@ files:
   - package.json
   - "!**/*.map"
   - "!dist/**"
+  # npm 10 - which is what CI runs - leaves a junction here:
+  #   desktop/node_modules/apm-open-player  ->  the repository root
+  # because it links the project it just installed. electron-builder walks
+  # node_modules, follows the junction, and packs the entire repository into
+  # the installer - including desktop/dist/win-unpacked, which electron-builder
+  # is writing at that exact moment, plus release/ and .git. That is what
+  # turned a 174 MB installer into 313 MB, and it grows with every run.
+  # The workflow also deletes the junction; this is here so the bug cannot
+  # come back through a different npm version.
+  - "!node_modules/apm-open-player"
+  - "!node_modules/apm-open-player/**"
 
 extraResources:
   - from: vendor/mpv
