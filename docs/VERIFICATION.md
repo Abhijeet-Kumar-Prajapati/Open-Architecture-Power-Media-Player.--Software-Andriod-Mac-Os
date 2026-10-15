@@ -35,7 +35,7 @@ Protocols: 78, including `http`, `https`, `rtsp`, `rtmp`, `udp`, `srt`, `mms`.
 
 ---
 
-## 2. End-to-end decode test — 31 / 31
+## 2. End-to-end decode test — 30 / 30
 
 Real files were authored with ffmpeg, then played through the same libmpv the
 app ships, with the clock checked to confirm decoding actually happened.
@@ -73,7 +73,7 @@ Re-run after the media generator gained `smoke-60s.mp4`, which is 60 seconds
 rather than 3 — the short clips reach EOF before the clock can be sampled:
 
 ```
-31 passed, 0 failed of 31
+30 passed, 0 failed of 30
 ```
 
 ---

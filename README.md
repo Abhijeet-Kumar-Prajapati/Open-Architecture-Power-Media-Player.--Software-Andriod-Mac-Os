@@ -202,7 +202,7 @@ node tools/test-decode.js        # decode every one through the shipped engine
 node tools/smoke-electron.js     # launch the real app, verify the video window
 ```
 
-Latest run: **31/31 formats decoded** (including 4K/2160p HEVC with E-AC-3),
+Latest run: **30/30 formats decoded** (including 4K/2160p HEVC with E-AC-3),
 and the smoke test confirms the native video surface, playlist, metadata and
 transport all work — against the *packaged* executable, not just the dev build.
 
