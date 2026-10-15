@@ -159,6 +159,17 @@
   }
   .dl.primary .tagx{background:linear-gradient(135deg,var(--accent),var(--accent-2))}
 
+  /* A download that is not published yet. Shown instead of a link that would
+     404 - a card that cannot be clicked is honest, a dead button is not. */
+  .dl.pending{
+    cursor:default;opacity:.62;border-style:dashed;border-color:var(--fg-dim);
+    background:none;pointer-events:none
+  }
+  .dl.pending:hover{transform:none;border-color:var(--fg-dim)}
+  .dl.pending .ic{opacity:.5}
+  .dl.pending .go{display:none}
+  .dl.pending .tagx{background:var(--fg-dim);color:var(--bg)}
+
   .fnote{
     margin-top:26px;padding:17px 20px;border-radius:11px;
     background:var(--bg-alt);border:1px solid var(--border);
@@ -332,11 +343,11 @@
           <span class="tx"><b>Installer &mdash; 64-bit</b><span>.exe &middot; 174 MB &middot; NSIS, per-user</span></span>
           <span class="go">&#8594;</span>
         </a>
-        <a class="dl" href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0-Windows-x64-Portable.exe">
+        <div class="dl pending" aria-disabled="true">
+          <span class="tagx">Soon</span>
           <span class="ic">&#128230;</span>
-          <span class="tx"><b>Portable &mdash; 64-bit</b><span>.exe &middot; no install, one folder</span></span>
-          <span class="go">&#8594;</span>
-        </a>
+          <span class="tx"><b>Portable &mdash; 64-bit</b><span>Building &mdash; not published yet</span></span>
+        </div>
       </div>
     </div>
 

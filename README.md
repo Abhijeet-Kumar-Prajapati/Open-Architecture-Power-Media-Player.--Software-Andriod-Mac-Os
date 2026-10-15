@@ -117,10 +117,10 @@ Seven separate builds. Take the one that matches your machine and nothing else.
 | Build | File | Notes |
 | --- | --- | --- |
 | **Installer** (recommended) | `APM-Open-Player-1.0.0-Windows-x64-Setup.exe` | 174 MB, NSIS, per-user, no admin |
-| **Portable** | `APM-Open-Player-1.0.0-Windows-x64-Portable.exe` | no install at all, one folder |
+| **Portable** | *not published yet* | built by CI, awaiting release |
 
 <a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0-Windows-x64-Setup.exe"><img src="https://img.shields.io/badge/Download-Windows-64--bit%20Installer-0e639c?style=for-the-badge" alt="Download Windows 64-bit installer"></a>
-<a href="https://github.com/Abhijeet-Kumar-Prajapati/Open-Architecture-Power-Media-Player.--Software-Andriod-Mac-Os/releases/download/v1.0.0/APM-Open-Player-1.0.0-Windows-x64-Portable.exe"><img src="https://img.shields.io/badge/Download-Windows-64--bit%20Portable-2d7d9a?style=for-the-badge" alt="Download Windows 64-bit portable"></a>
+<img src="https://img.shields.io/badge/Portable%20build-coming%20soon-555?style=for-the-badge" alt="Windows 64-bit portable, not published yet">
 
 ### macOS
 
