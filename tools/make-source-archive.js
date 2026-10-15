@@ -14,6 +14,15 @@ const EXCLUDE_PATH = new Set(['android/build', 'android/app/build']);
 const EXCLUDE_FILE = new Set(['smoke-ui.png', 'smoke-frame.png', 'smoke-report.json', '.DS_Store']);
 const NEVER_SHIP = /\.(jks|keystore|p12|pfx|der|key)$/i;
 
+/**
+ * The resized icon PNGs under desktop/build/ are generated from icon.ico by
+ * tools/make-icon.ps1. They are gitignored, so CI never has them and its
+ * archive came out eight files smaller than a local one - the same command
+ * producing a different result depending on where it ran. icon.ico, icon.icns,
+ * icon.png and installer.nsh are checked in and do ship.
+ */
+const GENERATED = /^desktop\/build\/icon-\d+\.png$/;
+
 (function walk(dir) {
   for (const name of fs.readdirSync(dir)) {
     const full = path.join(dir, name);
@@ -26,6 +35,7 @@ const NEVER_SHIP = /\.(jks|keystore|p12|pfx|der|key)$/i;
     }
     if (EXCLUDE_FILE.has(name) || NEVER_SHIP.test(name)) continue;
     if (/^android\/(app\/)?build\//.test(rel)) continue;
+    if (GENERATED.test(rel)) continue;
     if (/\.(exe|apk|dll|so|dylib|7z|blockmap|zip)$/i.test(name)) continue;
     if (/\.log$|\.tmp$|\.out$/i.test(name)) continue;
     files.push(full);
