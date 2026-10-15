@@ -8,7 +8,7 @@
  *
  * Output, all in release/:
  *   APM-Open-Player-<v>-source.zip          repository snapshot, ~360 KB
- *   APM-Open-Player-<v>-Windows-Setup.exe   copied from desktop/dist
+ *   APM-Open-Player-<v>-Windows-<arch>-Setup.exe   copied from desktop/dist
  *   APM-Open-Player-<v>-macos-arm64.zip     copied from release/
  *   APM-Open-Player-<v>-macos-x64.zip       copied from release/
  *   APM-Open-Player-<v>.apk                 copied from the Gradle output
@@ -73,6 +73,16 @@ function log(...a) { console.log('[package]', ...a); }
 
 function mb(bytes) { return `${(bytes / 1024 / 1024).toFixed(1)} MB`; }
 
+/* Return the first candidate that exists, or the first candidate so the
+   error message names what was actually looked for. */
+function firstExisting(dir, names) {
+  for (const n of names) {
+    const p = path.join(dir, n);
+    if (fs.existsSync(p)) return p;
+  }
+  return path.join(dir, names[0]);
+}
+
 function copyInto(src, destName, { required = true } = {}) {
   if (!fs.existsSync(src)) {
     if (required) throw new Error(`missing artifact: ${path.relative(ROOT, src)}`);
@@ -124,9 +134,12 @@ Ek player. Har format. Har platform.
 Is archive mein teen platforms ke installers hain. Apne hisaab se ek chuno.
 
 
-  Windows   APM-Open-Player-${V}-Windows-Setup.exe    (~174 MB)
+  Windows   APM-Open-Player-${V}-Windows-x64-Setup.exe      (~174 MB)
             Setup chalao, app install ho jayegi. .mkv .mp4 .avi jaise files
             "Open with" mein aa jayengi.
+
+            APM-Open-Player-${V}-Windows-x64-Portable.exe
+            Install nahi karna, seedha chalao. Ek hi folder me rehta hai.
 
   macOS     APM-Open-Player-${V}-macos-arm64.zip      (~125 MB)
             Apple Silicon (M1/M2/M3/M4) waale Mac.
@@ -168,7 +181,8 @@ function main() {
 
   // 1. Clear anything left from an earlier run so the folder cannot grow.
   const keep = new Set([
-    `APM-Open-Player-${V}-Windows-Setup.exe`,
+    `APM-Open-Player-${V}-Windows-x64-Setup.exe`,
+    `APM-Open-Player-${V}-Windows-x64-Portable.exe`,
     `APM-Open-Player-${V}-macos-arm64.zip`,
     `APM-Open-Player-${V}-macos-x64.zip`,
     `APM-Open-Player-${V}.apk`,
@@ -195,9 +209,23 @@ function main() {
 
   // 2. Collect the per-platform artifacts.
   log('collecting artifacts');
+  // electron-builder.yml sets artifactName to
+  // APM-Open-Player-${version}-Windows-${arch}-Setup.exe, so that is what
+  // lands in dist/. The old default name is still accepted so the script
+  // keeps working if the config is ever reverted.
+  const distDir = path.join(ROOT, 'desktop', 'dist');
   const installer = copyInto(
-    path.join(ROOT, 'desktop', 'dist', `APM Open Player Setup ${V}.exe`),
-    `APM-Open-Player-${V}-Windows-Setup.exe`);
+    firstExisting(distDir, [
+      `APM-Open-Player-${V}-Windows-x64-Setup.exe`,
+      `APM Open Player Setup ${V}.exe`,
+    ]),
+    `APM-Open-Player-${V}-Windows-x64-Setup.exe`);
+  const portable = copyInto(
+    firstExisting(distDir, [
+      `APM-Open-Player-${V}-Windows-x64-Portable.exe`,
+      `APM Open Player ${V}.exe`,
+    ]),
+    `APM-Open-Player-${V}-Windows-x64-Portable.exe`, { required: false });
   const macArm = copyInto(
     path.join(RELEASE, `APM-Open-Player-${V}-macos-arm64.zip`),
     `APM-Open-Player-${V}-macos-arm64.zip`, { required: false });
@@ -247,7 +275,8 @@ function main() {
   const az = new ZipWriter(allPath);
 
   const bundle = [
-    `APM-Open-Player-${V}-Windows-Setup.exe`,
+    `APM-Open-Player-${V}-Windows-x64-Setup.exe`,
+    `APM-Open-Player-${V}-Windows-x64-Portable.exe`,
     `APM-Open-Player-${V}-macos-arm64.zip`,
     `APM-Open-Player-${V}-macos-x64.zip`,
     `APM-Open-Player-${V}.apk`,
